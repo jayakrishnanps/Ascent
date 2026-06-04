@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,7 +28,7 @@ import com.yourapp.productivity.ui.tasks.TaskListScreen
 fun AscentApp() {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
-    val startDestination = "tasks" // if (auth.currentUser != null) "tasks" else "auth"
+    val startDestination = if (auth.currentUser != null) "tasks" else "auth"
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route

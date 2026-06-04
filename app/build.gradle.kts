@@ -4,7 +4,6 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
-    kotlin("plugin.serialization")
 }
 
 android {
@@ -81,9 +80,6 @@ dependencies {
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
-
-    // Kotlin Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
