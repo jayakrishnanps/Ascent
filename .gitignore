@@ -1,0 +1,15 @@
+# Android/Gradle
+.gradle/
+build/
+.idea/
+local.properties
+*.iml
+
+# Specific files requested to be ignored
+AI CODING RULES.txt
+Initialsetup.txt
+
+# Misc
+*.log
+.DS_Store
+captures/
