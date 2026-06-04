@@ -8,6 +8,8 @@ local.properties
 # Specific files requested to be ignored
 AI CODING RULES.txt
 Initialsetup.txt
+Design.txt
+for_design.txt
 
 # Misc
 *.log

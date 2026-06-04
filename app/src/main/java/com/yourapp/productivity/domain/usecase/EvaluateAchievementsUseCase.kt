@@ -38,8 +38,6 @@ class EvaluateAchievementsUseCase @Inject constructor(
                     if (userProgress.currentStreak >= achievement.conditionValue) conditionMet = true
                 }
                 "HARD_TASKS" -> {
-                    // Simplifying for MVP: just assume this checks total tasks or we'd need a specific query for HARD tasks.
-                    // For now, let's skip specific HARD task queries and just match the other conditions.
                 }
             }
 

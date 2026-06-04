@@ -21,11 +21,9 @@ class CompleteTaskUseCase @Inject constructor(
     suspend operator fun invoke(task: Task) {
         val now = System.currentTimeMillis()
         
-        // 1. Mark task as completed
         val completedTask = task.copy(isCompleted = true, completedAt = now)
         taskRepository.updateTask(completedTask)
 
-        // 2. Insert Completion History and award XP
         val xpEarned = task.difficulty.xpAward
         val history = CompletionHistory(
             taskId = task.id,
@@ -34,7 +32,6 @@ class CompleteTaskUseCase @Inject constructor(
         )
         completionHistoryRepository.insert(history)
 
-        // 3. Update User Progress
         val userId = firebaseAuth.currentUser?.uid
         if (userId != null) {
             val userProgress = userRepository.getUserProgress(userId).firstOrNull()
@@ -42,7 +39,6 @@ class CompleteTaskUseCase @Inject constructor(
                 val newXp = userProgress.totalXp + xpEarned
                 val newLevel = (newXp / 100) + 1
                 
-                // Calculate streak
                 var currentStreak = userProgress.currentStreak
                 var longestStreak = userProgress.longestStreak
                 val lastCompletion = userProgress.lastCompletionDate
@@ -77,12 +73,10 @@ class CompleteTaskUseCase @Inject constructor(
             }
         }
 
-        // 4. Handle Recurrence
         if (task.recurrenceType != RecurrenceType.NONE) {
             generateNextRecurrence(task, now)
         }
 
-        // 5. Evaluate achievements
         evaluateAchievementsUseCase()
     }
 
@@ -108,14 +102,13 @@ class CompleteTaskUseCase @Inject constructor(
             RecurrenceType.WEEKLY -> {
                 val cal = Calendar.getInstance()
                 task.dueDate?.let { cal.timeInMillis = it }
-                cal.add(Calendar.DAY_OF_YEAR, 7) // Simple implementation: same day next week
+                cal.add(Calendar.DAY_OF_YEAR, 7)
                 cal.timeInMillis
             }
             RecurrenceType.NONE -> null
         }
 
         if (nextDueDate != null) {
-            // Check end date
             if (task.recurrenceEndDate == null || nextDueDate <= task.recurrenceEndDate) {
                 val newTask = task.copy(
                     id = UUID.randomUUID().toString(),

@@ -27,9 +27,7 @@ import com.yourapp.productivity.ui.tasks.TaskListScreen
 @Composable
 fun AscentApp() {
     val navController = rememberNavController()
-    val auth = FirebaseAuth.getInstance()
-    val startDestination = if (auth.currentUser != null) "tasks" else "auth"
-
+    
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -69,9 +67,19 @@ fun AscentApp() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = startDestination,
+            startDestination = "loading",
             modifier = Modifier.padding(paddingValues)
         ) {
+            composable("loading") {
+                LoadingScreen(
+                    onLoadingComplete = {
+                        navController.navigate("tasks") {
+                            popUpTo("loading") { inclusive = true }
+                        }
+                    }
+                )
+            }
+            // AuthScreen remains in the graph but is unreachable from startup
             composable("auth") {
                 AuthScreen(
                     onSignInSuccess = {
@@ -100,7 +108,8 @@ fun AscentApp() {
             composable("profile") {
                 ProfileScreen(
                     onSignOut = {
-                        navController.navigate("auth") {
+                        // For development, we'll just navigate back to tasks or loading instead of auth
+                        navController.navigate("tasks") {
                             popUpTo(0)
                         }
                     }
@@ -109,3 +118,4 @@ fun AscentApp() {
         }
     }
 }
+

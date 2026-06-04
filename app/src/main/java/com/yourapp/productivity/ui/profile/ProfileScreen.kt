@@ -1,10 +1,17 @@
 package com.yourapp.productivity.ui.profile
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -12,33 +19,32 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.data.local.database.entities.Achievement
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onSignOut: () -> Unit, // Kept parameter to avoid breaking caller, though unused in UI now
+    onSignOut: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val progress = uiState.userProgress
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    
+    val currentLevel = progress?.currentLevel ?: 1
+    val currentXp = progress?.totalXp ?: 0
+    val levelBaseXp = (currentLevel - 1) * 100
+    val xpInCurrentLevel = currentXp - levelBaseXp
+    val progressFraction = (xpInCurrentLevel.toFloat() / 100f).coerceIn(0f, 1f)
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            LargeTopAppBar(
-                title = { 
-                    Text("Profile & Stats", fontWeight = FontWeight.Bold) 
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                )
-            )
+            ProfileTopAppBar(level = currentLevel, xpProgress = progressFraction)
         }
     ) { padding ->
         if (uiState.isLoading) {
@@ -54,34 +60,38 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
-                // Level & XP Progress
+                
+                // Sign Out Button (placed elegantly)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onSignOut) {
+                        Text("Sign Out", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            text = "Level ${progress?.currentLevel ?: 1}",
+                            text = "Level $currentLevel",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        val currentXp = progress?.totalXp ?: 0
-                        val levelBaseXp = ((progress?.currentLevel ?: 1) - 1) * 100
-                        val nextLevelXp = (progress?.currentLevel ?: 1) * 100
-                        val xpInCurrentLevel = currentXp - levelBaseXp
-                        val progressFraction = xpInCurrentLevel.toFloat() / 100f
+                        val nextLevelXp = currentLevel * 100
                         
                         LinearProgressIndicator(
-                            progress = progressFraction,
+                            progress = { progressFraction },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(10.dp)
                                 .clip(RoundedCornerShape(50)),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                            trackColor = MaterialTheme.colorScheme.surfaceDim
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -92,7 +102,6 @@ fun ProfileScreen(
                     }
                 }
 
-                // Stats Grid
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     StatCard("Current Streak", "${progress?.currentStreak ?: 0}", "days", Modifier.weight(1f))
                     StatCard("Longest Streak", "${progress?.longestStreak ?: 0}", "days", Modifier.weight(1f))
@@ -102,7 +111,6 @@ fun ProfileScreen(
                     StatCard("This Week", "${uiState.tasksCompletedThisWeek}", "tasks", Modifier.weight(1f))
                 }
 
-                // Achievements Header
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Achievements", 
@@ -131,11 +139,78 @@ fun ProfileScreen(
 }
 
 @Composable
+fun ProfileTopAppBar(level: Int, xpProgress: Float) {
+    Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .statusBarsPadding(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(text = "Lvl $level", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    LinearProgressIndicator(
+                        progress = { xpProgress },
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(6.dp)
+                            .clip(CircleShape),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceDim
+                    )
+                }
+            }
+            
+            Text(
+                text = "ASCENT",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 2.sp
+            )
+            
+            IconButton(
+                onClick = { /* Quick Action */ },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.Transparent, CircleShape)
+            ) {
+                Icon(Icons.Default.FlashOn, contentDescription = "Quick Action", tint = MaterialTheme.colorScheme.primary)
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(Color.Transparent, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), Color.Transparent)
+                    )
+                )
+        )
+    }
+}
+
+@Composable
 fun StatCard(title: String, value: String, subtitle: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -151,7 +226,7 @@ fun StatCard(title: String, value: String, subtitle: String, modifier: Modifier 
                 Text(
                     text = subtitle, 
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.outlineVariant
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -171,7 +246,8 @@ fun AchievementCard(achievement: Achievement, isEarned: Boolean) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = if (isEarned) 0.5f else 0.2f)),
+        border = BorderStroke(1.dp, if (isEarned) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

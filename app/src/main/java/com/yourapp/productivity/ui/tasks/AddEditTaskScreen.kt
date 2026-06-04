@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -61,7 +61,7 @@ fun AddEditTaskScreen(
                 title = { Text(if (taskId == null) "Add Task" else "Edit Task") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -103,7 +103,6 @@ fun AddEditTaskScreen(
                 minLines = 3
             )
             
-            // Difficulty Selection
             Text("Difficulty", style = MaterialTheme.typography.titleSmall)
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -118,7 +117,6 @@ fun AddEditTaskScreen(
                 }
             }
 
-            // Recurrence Selection
             Text("Recurrence", style = MaterialTheme.typography.titleSmall)
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -150,13 +148,12 @@ fun AddEditTaskScreen(
                 }
             }
 
-            // Date Picker Placeholder (In real app, use DatePickerDialog or DatePicker Composable)
             Text("Due Date: ${formatDate(uiState.dueDate)}", style = MaterialTheme.typography.bodyLarge)
             Button(onClick = { viewModel.updateDueDate(System.currentTimeMillis()) }) {
                 Text("Set Due Date to Today")
             }
             
-            Spacer(modifier = Modifier.height(64.dp)) // space for FAB
+            Spacer(modifier = Modifier.height(64.dp))
         }
     }
 }

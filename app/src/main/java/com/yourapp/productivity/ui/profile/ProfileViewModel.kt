@@ -54,7 +54,6 @@ class ProfileViewModel @Inject constructor(
 
         viewModelScope.launch {
             val total = completionHistoryRepository.getTotalCompletionsCount()
-            // Simplified "this week" calculation for MVP - just taking last 7 days
             val weekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
             val thisWeek = completionHistoryRepository.getCompletionsCountSince(weekAgo)
             

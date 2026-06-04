@@ -1,24 +1,36 @@
 package com.yourapp.productivity.ui.tasks
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.data.local.database.entities.Task
 import com.yourapp.productivity.domain.model.Difficulty
@@ -31,33 +43,24 @@ fun TaskListScreen(
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            LargeTopAppBar(
-                title = { 
-                    Text(
-                        "My Tasks", 
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                )
-            )
+            AscentTopAppBar()
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddTaskClick,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp),
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
+                shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 2.dp
+                )
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Task")
+                Icon(Icons.Default.Add, contentDescription = "Add Task", modifier = Modifier.size(32.dp))
             }
         }
     ) { padding ->
@@ -70,49 +73,59 @@ fun TaskListScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Today & Overdue Section
                 item {
-                    SectionHeader(title = "Today & Overdue")
+                    SectionHeader(title = "Active Quests", icon = Icons.Default.Whatshot, iconColor = MaterialTheme.colorScheme.primary)
                 }
 
                 if (uiState.todayTasks.isEmpty()) {
                     item {
-                        EmptyStateMessage("No tasks for today. You are all caught up!")
+                        EmptyStateMessage("No active quests. Time to rest!")
                     }
                 } else {
                     items(uiState.todayTasks, key = { it.id }) { task ->
                         TaskItem(
                             task = task,
                             onClick = { onTaskClick(task.id) },
-                            onCompleteClick = { viewModel.completeTask(task) }
+                            onCompleteClick = { viewModel.completeTask(task) },
+                            isFuture = false
                         )
                     }
                 }
 
-                // Upcoming Section
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    SectionHeader(title = "Upcoming")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color.Transparent, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), Color.Transparent)
+                                )
+                            )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SectionHeader(title = "Future Trials", icon = Icons.Default.DateRange, iconColor = MaterialTheme.colorScheme.outlineVariant)
                 }
 
                 if (uiState.upcomingTasks.isEmpty()) {
                     item {
-                        EmptyStateMessage("No upcoming tasks on your radar.")
+                        EmptyStateMessage("No future trials on your radar.")
                     }
                 } else {
                     items(uiState.upcomingTasks, key = { it.id }) { task ->
                         TaskItem(
                             task = task,
                             onClick = { onTaskClick(task.id) },
-                            onCompleteClick = { viewModel.completeTask(task) }
+                            onCompleteClick = { viewModel.completeTask(task) },
+                            isFuture = true
                         )
                     }
                 }
                 
-                // Bottom padding for FAB
                 item {
                     Spacer(modifier = Modifier.height(80.dp))
                 }
@@ -122,14 +135,82 @@ fun TaskListScreen(
 }
 
 @Composable
-fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
-    )
+fun AscentTopAppBar(level: Int = 12, xpProgress: Float = 0.75f) {
+    Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .statusBarsPadding(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(text = "Lvl $level", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    LinearProgressIndicator(
+                        progress = { xpProgress },
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(6.dp)
+                            .clip(CircleShape),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceDim
+                    )
+                }
+            }
+            
+            Text(
+                text = "ASCENT",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 2.sp
+            )
+            
+            IconButton(
+                onClick = { /* Quick Action */ },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.Transparent, CircleShape)
+            ) {
+                Icon(Icons.Default.FlashOn, contentDescription = "Quick Action", tint = MaterialTheme.colorScheme.primary)
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(Color.Transparent, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), Color.Transparent)
+                    )
+                )
+        )
+    }
+}
+
+@Composable
+fun SectionHeader(title: String, icon: ImageVector, iconColor: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+        Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineMedium,
+            color = if (iconColor == MaterialTheme.colorScheme.primary) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }
 
 @Composable
@@ -159,7 +240,8 @@ fun EmptyStateMessage(message: String) {
 fun TaskItem(
     task: Task,
     onClick: () -> Unit,
-    onCompleteClick: () -> Unit
+    onCompleteClick: () -> Unit,
+    isFuture: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -167,32 +249,41 @@ fun TaskItem(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = if (isFuture) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
         ),
+        border = BorderStroke(1.dp, if(isFuture) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Checkbox(
-                checked = task.isCompleted,
-                onCheckedChange = { onCompleteClick() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                DifficultyBadge(difficulty = task.difficulty, isFuture = isFuture)
+                Box(
+                    modifier = Modifier
+                        .background(if (isFuture) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    val xpReward = when(task.difficulty) { Difficulty.HARD -> 150; Difficulty.MEDIUM -> 50; Difficulty.EASY -> 25 }
+                    Text(
+                        text = "+$xpReward XP",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (isFuture) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Column {
                 Text(
                     text = task.title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Medium,
-                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                    ),
-                    color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (isFuture) FontWeight.Medium else FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -201,14 +292,32 @@ fun TaskItem(
                     Text(
                         text = task.description,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isFuture) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    DifficultyBadge(difficulty = task.difficulty)
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onCompleteClick,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Complete",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }
@@ -216,21 +325,27 @@ fun TaskItem(
 }
 
 @Composable
-fun DifficultyBadge(difficulty: Difficulty) {
-    val (backgroundColor, textColor) = when (difficulty) {
-        Difficulty.EASY -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-        Difficulty.MEDIUM -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
-        Difficulty.HARD -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+fun DifficultyBadge(difficulty: Difficulty, isFuture: Boolean) {
+    val (bgColor, textColor, borderColor) = if (isFuture) {
+        Triple(MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
+    } else {
+        when (difficulty) {
+            Difficulty.EASY -> Triple(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
+            Difficulty.MEDIUM -> Triple(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
+            Difficulty.HARD -> Triple(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
+        }
     }
+
     Surface(
-        color = backgroundColor,
-        shape = RoundedCornerShape(percent = 50)
+        color = bgColor,
+        shape = RoundedCornerShape(percent = 50),
+        border = BorderStroke(1.dp, borderColor)
     ) {
         Text(
             text = difficulty.name.lowercase().replaceFirstChar { it.uppercase() },
             color = textColor,
-            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }

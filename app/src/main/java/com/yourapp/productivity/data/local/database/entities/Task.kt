@@ -18,5 +18,5 @@ data class Task(
     val completedAt: Long?,
     val recurrenceType: RecurrenceType,
     val recurrenceEndDate: Long?,
-    val weeklyDays: String? // comma-separated ints 0-6
+    val weeklyDays: String?
 )
