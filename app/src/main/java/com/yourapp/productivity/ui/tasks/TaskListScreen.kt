@@ -40,6 +40,7 @@ import com.yourapp.productivity.domain.model.Difficulty
 fun TaskListScreen(
     onAddTaskClick: () -> Unit,
     onTaskClick: (String) -> Unit,
+    onMenuClick: () -> Unit,
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -47,7 +48,7 @@ fun TaskListScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AscentTopAppBar()
+            AscentTopAppBar(onMenuClick = onMenuClick)
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -135,7 +136,7 @@ fun TaskListScreen(
 }
 
 @Composable
-fun AscentTopAppBar(level: Int = 12, xpProgress: Float = 0.75f) {
+fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float = 0.75f) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Row(
             modifier = Modifier
@@ -152,6 +153,7 @@ fun AscentTopAppBar(level: Int = 12, xpProgress: Float = 0.75f) {
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                        .clickable(onClick = onMenuClick)
                 ) {
                     Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

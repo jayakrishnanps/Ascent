@@ -3,6 +3,8 @@ package com.yourapp.productivity.ui.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yourapp.productivity.data.local.database.entities.Task
+import com.yourapp.productivity.domain.model.Difficulty
+import com.yourapp.productivity.domain.model.RecurrenceType
 import com.yourapp.productivity.domain.repository.TaskRepository
 import com.yourapp.productivity.domain.utils.DateUtils
 import com.yourapp.productivity.domain.usecase.CompleteTaskUseCase
@@ -14,9 +16,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class TaskListUiState(
-    val isLoading: Boolean = true,
-    val todayTasks: List<Task> = emptyList(),
-    val upcomingTasks: List<Task> = emptyList(),
+    val isLoading: Boolean = false,
+    val todayTasks: List<Task> = listOf(
+        Task(id = "1", title = "Morning Meditation", description = "10 minutes of mindfulness", dueDate = System.currentTimeMillis(), difficulty = Difficulty.EASY, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = null, weeklyDays = null),
+        Task(id = "2", title = "Workout", description = "Gym session", dueDate = System.currentTimeMillis(), difficulty = Difficulty.HARD, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = null, weeklyDays = null),
+        Task(id = "3", title = "Read 20 pages", description = "Book: Clean Code", dueDate = System.currentTimeMillis(), difficulty = Difficulty.MEDIUM, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = null, weeklyDays = null)
+    ),
+    val upcomingTasks: List<Task> = listOf(
+        Task(id = "4", title = "Weekly Review", description = "Plan next week", dueDate = System.currentTimeMillis() + 86400000, difficulty = Difficulty.MEDIUM, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.WEEKLY, recurrenceEndDate = null, weeklyDays = null)
+    ),
     val error: String? = null
 )
 
@@ -30,7 +38,7 @@ class TaskListViewModel @Inject constructor(
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
     init {
-        loadTasks()
+        // loadTasks() // Temporarily disabled for mock data
     }
 
     private fun loadTasks() {

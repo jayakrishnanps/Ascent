@@ -17,13 +17,25 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ProfileUiState(
-    val userProgress: UserProgress? = null,
-    val totalTasksCompleted: Int = 0,
-    val tasksCompletedThisWeek: Int = 0,
-    val allAchievements: List<Achievement> = emptyList(),
-    val earnedAchievementIds: Set<String> = emptySet(),
+    val userProgress: UserProgress? = UserProgress(
+        userId = "mock_user",
+        totalXp = 1250,
+        currentLevel = 13,
+        currentStreak = 5,
+        longestStreak = 12,
+        lastCompletionDate = System.currentTimeMillis()
+    ),
+    val totalTasksCompleted: Int = 42,
+    val tasksCompletedThisWeek: Int = 12,
+    val allAchievements: List<Achievement> = listOf(
+        Achievement("1", "Early Bird", "Complete 5 tasks before 8 AM", "early_bird", 5, 0),
+        Achievement("2", "Productivity Ninja", "Complete 10 tasks in a day", "daily_tasks", 10, 0),
+        Achievement("3", "Streak Master", "Maintain a 7-day streak", "streak", 7, 0),
+        Achievement("4", "Task Master", "Complete 50 tasks total", "total_tasks", 50, 0)
+    ),
+    val earnedAchievementIds: Set<String> = setOf("1", "2"),
     val themeMode: String = "SYSTEM",
-    val isLoading: Boolean = true
+    val isLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -39,16 +51,18 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfileData()
+        // loadProfileData() // Temporarily disabled for mock data
         observeTheme()
     }
 
     private fun loadProfileData() {
-        val userId = firebaseAuth.currentUser?.uid ?: return
+        val userId = firebaseAuth.currentUser?.uid ?: "mock_user"
         
         viewModelScope.launch {
             userRepository.getUserProgress(userId).collect { progress ->
-                _uiState.value = _uiState.value.copy(userProgress = progress)
+                if (progress != null) {
+                    _uiState.value = _uiState.value.copy(userProgress = progress)
+                }
             }
         }
 

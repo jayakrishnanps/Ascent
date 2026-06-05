@@ -3,6 +3,7 @@ package com.yourapp.productivity.ui.profile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -30,6 +31,7 @@ import com.yourapp.productivity.data.local.database.entities.Achievement
 @Composable
 fun ProfileScreen(
     onSignOut: () -> Unit,
+    onMenuClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -44,7 +46,7 @@ fun ProfileScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            ProfileTopAppBar(level = currentLevel, xpProgress = progressFraction)
+            ProfileTopAppBar(onMenuClick = onMenuClick, level = currentLevel, xpProgress = progressFraction)
         }
     ) { padding ->
         if (uiState.isLoading) {
@@ -139,7 +141,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileTopAppBar(level: Int, xpProgress: Float) {
+fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Row(
             modifier = Modifier
@@ -156,6 +158,7 @@ fun ProfileTopAppBar(level: Int, xpProgress: Float) {
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                        .clickable(onClick = onMenuClick)
                 ) {
                     Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
