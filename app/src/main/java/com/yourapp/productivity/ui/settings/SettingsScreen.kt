@@ -29,17 +29,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
+import coil.compose.AsyncImage
+import com.yourapp.productivity.ui.auth.AuthViewModel
+
 @Composable
 fun SettingsScreen(
     onMenuClick: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val authProfile by authViewModel.userProfile.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SettingsTopAppBar(onMenuClick = onMenuClick)
+            SettingsTopAppBar(onMenuClick = onMenuClick, photoUrl = authProfile?.photoUrl)
         }
     ) { padding ->
         Column(
@@ -70,12 +75,20 @@ fun SettingsScreen(
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            if (authProfile?.photoUrl != null) {
+                                AsyncImage(
+                                    model = authProfile?.photoUrl,
+                                    contentDescription = "Avatar",
+                                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                )
+                            } else {
+                                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            }
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text(text = "Hero User", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                            Text(text = uiState.userEmail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(text = authProfile?.displayName ?: "Hero User", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text(text = authProfile?.email ?: uiState.userEmail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -168,7 +181,7 @@ fun ThemeColorOption(color: Color, isSelected: Boolean) {
 }
 
 @Composable
-fun SettingsTopAppBar(onMenuClick: () -> Unit) {
+fun SettingsTopAppBar(onMenuClick: () -> Unit, photoUrl: String? = null) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Row(
             modifier = Modifier
@@ -187,7 +200,15 @@ fun SettingsTopAppBar(onMenuClick: () -> Unit) {
                         .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
                         .clickable(onClick = onMenuClick)
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (photoUrl != null) {
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                        )
+                    } else {
+                        Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(

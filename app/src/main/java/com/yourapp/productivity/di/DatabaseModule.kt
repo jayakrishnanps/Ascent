@@ -21,7 +21,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "ascent_database"
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides

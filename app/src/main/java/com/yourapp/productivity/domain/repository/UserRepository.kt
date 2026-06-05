@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     fun getUserProgress(userId: String): Flow<UserProgress?>
-    suspend fun createUserIfNotExists(userId: String)
+    suspend fun createUserIfNotExists(userId: String, displayName: String? = null, email: String? = null, photoUrl: String? = null)
     suspend fun updateUserProgress(userProgress: UserProgress)
 }

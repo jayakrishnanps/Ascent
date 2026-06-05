@@ -1,6 +1,7 @@
 # Android/Gradle
 .gradle/
 build/
+app/build/
 .idea/
 local.properties
 *.iml
@@ -9,3 +10,19 @@ local.properties
 *.log
 .DS_Store
 captures/
+.env
+
+# Design & Documentation Text Files (Not to be committed)
+/design.txt
+/Google.txt
+/about_project.txt
+/marketing/landingpageconvert.txt
+
+# Marketing / Frontend (Astro & Node)
+/marketing/node_modules/
+/marketing/dist/
+/marketing/.astro/
+/marketing/npm-debug.log*
+/marketing/yarn-error.log*
+/marketing/yarn-debug.log*
+/marketing/pnpm-debug.log*

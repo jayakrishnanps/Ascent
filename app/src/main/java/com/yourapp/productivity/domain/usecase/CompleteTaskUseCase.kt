@@ -74,7 +74,7 @@ class CompleteTaskUseCase @Inject constructor(
         }
 
         if (task.recurrenceType != RecurrenceType.NONE) {
-            generateNextRecurrence(task, now)
+            generateNextRecurrence(task)
         }
 
         evaluateAchievementsUseCase()
@@ -91,7 +91,7 @@ class CompleteTaskUseCase @Inject constructor(
         return isSameDay(nextDayCal, currentCal)
     }
 
-    private suspend fun generateNextRecurrence(task: Task, currentTime: Long) {
+    private suspend fun generateNextRecurrence(task: Task) {
         val nextDueDate = when (task.recurrenceType) {
             RecurrenceType.DAILY -> {
                 val cal = Calendar.getInstance()

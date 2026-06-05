@@ -64,7 +64,10 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.credentials:credentials:1.2.1")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.1")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")

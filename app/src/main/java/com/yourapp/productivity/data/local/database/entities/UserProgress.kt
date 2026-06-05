@@ -11,5 +11,8 @@ data class UserProgress(
     val currentLevel: Int,
     val currentStreak: Int,
     val longestStreak: Int,
-    val lastCompletionDate: Long?
+    val lastCompletionDate: Long?,
+    val displayName: String? = null,
+    val email: String? = null,
+    val photoUrl: String? = null
 )

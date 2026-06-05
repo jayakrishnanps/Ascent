@@ -17,7 +17,7 @@ class UserRepositoryImpl @Inject constructor(
         return userDao.getUserProgress(userId)
     }
 
-    override suspend fun createUserIfNotExists(userId: String) {
+    override suspend fun createUserIfNotExists(userId: String, displayName: String?, email: String?, photoUrl: String?) {
         val existingUser = userDao.getUserProgress(userId).firstOrNull()
         if (existingUser == null) {
             val newUser = UserProgress(
@@ -26,9 +26,21 @@ class UserRepositoryImpl @Inject constructor(
                 currentLevel = 1,
                 currentStreak = 0,
                 longestStreak = 0,
-                lastCompletionDate = null
+                lastCompletionDate = null,
+                displayName = displayName,
+                email = email,
+                photoUrl = photoUrl
             )
             userDao.insertUserProgress(newUser)
+        } else {
+            val updatedUser = existingUser.copy(
+                displayName = displayName ?: existingUser.displayName,
+                email = email ?: existingUser.email,
+                photoUrl = photoUrl ?: existingUser.photoUrl
+            )
+            if (updatedUser != existingUser) {
+                userDao.updateUserProgress(updatedUser)
+            }
         }
     }
 

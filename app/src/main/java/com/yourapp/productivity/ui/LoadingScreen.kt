@@ -18,11 +18,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
+import com.google.firebase.auth.FirebaseAuth
+
 @Composable
-fun LoadingScreen(onLoadingComplete: () -> Unit) {
+fun LoadingScreen(onLoadingComplete: (isAuthenticated: Boolean) -> Unit) {
     LaunchedEffect(Unit) {
         delay(500)
-        onLoadingComplete()
+        // --- GOOGLE SIGN-IN DISABLED ---
+        // val user = FirebaseAuth.getInstance().currentUser
+        // onLoadingComplete(user != null)
+        
+        // Always pass true to bypass auth
+        onLoadingComplete(true)
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")

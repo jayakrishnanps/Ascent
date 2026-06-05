@@ -28,13 +28,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.data.local.database.entities.Achievement
 
+import coil.compose.AsyncImage
+import com.yourapp.productivity.ui.auth.AuthViewModel
+
 @Composable
 fun ProfileScreen(
     onSignOut: () -> Unit,
     onMenuClick: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val authProfile by authViewModel.userProfile.collectAsState()
     val progress = uiState.userProgress
     
     val currentLevel = progress?.currentLevel ?: 1
@@ -46,7 +51,7 @@ fun ProfileScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            ProfileTopAppBar(onMenuClick = onMenuClick, level = currentLevel, xpProgress = progressFraction)
+            ProfileTopAppBar(onMenuClick = onMenuClick, level = currentLevel, xpProgress = progressFraction, photoUrl = authProfile?.photoUrl ?: progress?.photoUrl)
         }
     ) { padding ->
         if (uiState.isLoading) {
@@ -141,7 +146,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float) {
+fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float, photoUrl: String? = null) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Row(
             modifier = Modifier
@@ -160,7 +165,15 @@ fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float) {
                         .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
                         .clickable(onClick = onMenuClick)
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (photoUrl != null) {
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                        )
+                    } else {
+                        Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -279,3 +292,4 @@ fun AchievementCard(achievement: Achievement, isEarned: Boolean) {
         }
     }
 }
+

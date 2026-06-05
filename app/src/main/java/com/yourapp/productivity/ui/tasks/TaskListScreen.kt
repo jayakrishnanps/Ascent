@@ -35,20 +35,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.data.local.database.entities.Task
 import com.yourapp.productivity.domain.model.Difficulty
 
+import coil.compose.AsyncImage
+import com.yourapp.productivity.ui.auth.AuthViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
     onAddTaskClick: () -> Unit,
     onTaskClick: (String) -> Unit,
     onMenuClick: () -> Unit,
-    viewModel: TaskListViewModel = hiltViewModel()
+    viewModel: TaskListViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val authProfile by authViewModel.userProfile.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AscentTopAppBar(onMenuClick = onMenuClick)
+            AscentTopAppBar(onMenuClick = onMenuClick, photoUrl = authProfile?.photoUrl)
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -77,6 +82,15 @@ fun TaskListScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    val displayName = authProfile?.displayName ?: "Hero"
+                    Text(
+                        text = "Welcome back, $displayName!",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 item {
                     SectionHeader(title = "Active Quests", icon = Icons.Default.Whatshot, iconColor = MaterialTheme.colorScheme.primary)
                 }
@@ -136,7 +150,7 @@ fun TaskListScreen(
 }
 
 @Composable
-fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float = 0.75f) {
+fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float = 0.75f, photoUrl: String? = null) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Row(
             modifier = Modifier
@@ -155,7 +169,15 @@ fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float 
                         .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
                         .clickable(onClick = onMenuClick)
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (photoUrl != null) {
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                        )
+                    } else {
+                        Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {

@@ -145,8 +145,9 @@ fun AscentApp() {
             ) {
                 composable("loading") {
                     LoadingScreen(
-                        onLoadingComplete = {
-                            navController.navigate("tasks") {
+                        onLoadingComplete = { isAuthenticated ->
+                            val route = if (isAuthenticated) "tasks" else "auth"
+                            navController.navigate(route) {
                                 popUpTo("loading") { inclusive = true }
                             }
                         }
@@ -180,9 +181,25 @@ fun AscentApp() {
                     )
                 }
                 composable("profile") {
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     ProfileScreen(
                         onSignOut = {
-                            // For development, we'll just navigate back to tasks or loading instead of auth
+                            // --- GOOGLE SIGN-IN DISABLED ---
+                            // Firebase sign-out and CredentialManager clearing are bypassed.
+                            // We just pop back to tasks or show a mock action.
+                            /*
+                            scope.launch {
+                                com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                                try {
+                                    androidx.credentials.CredentialManager.create(context).clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                                navController.navigate("auth") {
+                                    popUpTo(0)
+                                }
+                            }
+                            */
                             navController.navigate("tasks") {
                                 popUpTo(0)
                             }
