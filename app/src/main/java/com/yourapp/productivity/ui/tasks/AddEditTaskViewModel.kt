@@ -3,6 +3,7 @@ package com.yourapp.productivity.ui.tasks
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yourapp.productivity.data.local.database.entities.Subtask
 import com.yourapp.productivity.data.local.database.entities.Task
 import com.yourapp.productivity.domain.model.Difficulty
 import com.yourapp.productivity.domain.model.RecurrenceType
@@ -19,10 +20,12 @@ data class AddEditTaskUiState(
     val title: String = "",
     val description: String = "",
     val dueDate: Long? = null,
-    val difficulty: Difficulty = Difficulty.EASY,
+    val difficulty: Difficulty = Difficulty.LOW,
     val recurrenceType: RecurrenceType = RecurrenceType.NONE,
     val weeklyDays: Set<Int> = emptySet(),
     val recurrenceEndDate: Long? = null,
+    val subtasks: List<Subtask> = emptyList(),
+    val newSubtaskTitle: String = "",
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
     val isDeleting: Boolean = false,
@@ -36,6 +39,7 @@ class AddEditTaskViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val taskId: String? = savedStateHandle["taskId"]
+    private val generatedTaskId = taskId ?: UUID.randomUUID().toString()
 
     private val _uiState = MutableStateFlow(AddEditTaskUiState())
     val uiState: StateFlow<AddEditTaskUiState> = _uiState.asStateFlow()
@@ -48,15 +52,18 @@ class AddEditTaskViewModel @Inject constructor(
         viewModelScope.launch {
             val task = taskRepository.getTaskById(id)
             if (task != null) {
-                _uiState.value = AddEditTaskUiState(
-                    title = task.title,
-                    description = task.description ?: "",
-                    dueDate = task.dueDate,
-                    difficulty = task.difficulty,
-                    recurrenceType = task.recurrenceType,
-                    weeklyDays = task.weeklyDays?.split(",")?.mapNotNull { it.toIntOrNull() }?.toSet() ?: emptySet(),
-                    recurrenceEndDate = task.recurrenceEndDate
-                )
+                taskRepository.getSubtasksForTask(id).collect { subtasks ->
+                    _uiState.value = _uiState.value.copy(
+                        title = task.title,
+                        description = task.description ?: "",
+                        dueDate = task.dueDate,
+                        difficulty = task.difficulty,
+                        recurrenceType = task.recurrenceType,
+                        weeklyDays = task.weeklyDays?.split(",")?.mapNotNull { it.toIntOrNull() }?.toSet() ?: emptySet(),
+                        recurrenceEndDate = task.recurrenceEndDate,
+                        subtasks = subtasks
+                    )
+                }
             }
         }
     }
@@ -95,6 +102,31 @@ class AddEditTaskViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(recurrenceEndDate = endDate)
     }
 
+    fun updateNewSubtaskTitle(title: String) {
+        _uiState.value = _uiState.value.copy(newSubtaskTitle = title)
+    }
+
+    fun addSubtask() {
+        val title = _uiState.value.newSubtaskTitle.trim()
+        if (title.isNotEmpty()) {
+            val newSubtask = Subtask(taskId = generatedTaskId, title = title)
+            val currentSubtasks = _uiState.value.subtasks.toMutableList()
+            currentSubtasks.add(newSubtask)
+            _uiState.value = _uiState.value.copy(subtasks = currentSubtasks, newSubtaskTitle = "")
+        }
+    }
+
+    fun removeSubtask(subtask: Subtask) {
+        val currentSubtasks = _uiState.value.subtasks.toMutableList()
+        currentSubtasks.remove(subtask)
+        _uiState.value = _uiState.value.copy(subtasks = currentSubtasks)
+        if (taskId != null) {
+            viewModelScope.launch {
+                taskRepository.deleteSubtask(subtask)
+            }
+        }
+    }
+
     fun saveTask() {
         val currentState = _uiState.value
         if (currentState.title.isBlank()) return
@@ -106,7 +138,7 @@ class AddEditTaskViewModel @Inject constructor(
         } else null
 
         val task = Task(
-            id = taskId ?: UUID.randomUUID().toString(),
+            id = generatedTaskId,
             title = currentState.title,
             description = currentState.description.ifBlank { null },
             dueDate = currentState.dueDate,
@@ -124,6 +156,11 @@ class AddEditTaskViewModel @Inject constructor(
             } else {
                 taskRepository.updateTask(task)
             }
+            
+            currentState.subtasks.forEach { subtask ->
+                taskRepository.insertSubtask(subtask)
+            }
+            
             _uiState.value = currentState.copy(isSaving = false, isSaved = true)
         }
     }

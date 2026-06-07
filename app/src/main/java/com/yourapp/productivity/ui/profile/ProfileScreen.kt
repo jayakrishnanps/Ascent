@@ -44,9 +44,17 @@ fun ProfileScreen(
     
     val currentLevel = progress?.currentLevel ?: 1
     val currentXp = progress?.totalXp ?: 0
-    val levelBaseXp = (currentLevel - 1) * 100
+    
+    var levelBaseXp = 0
+    var nextLevelDelta = 400
+    for (i in 1 until currentLevel) {
+        levelBaseXp += nextLevelDelta
+        nextLevelDelta += 100
+    }
+    
     val xpInCurrentLevel = currentXp - levelBaseXp
-    val progressFraction = (xpInCurrentLevel.toFloat() / 100f).coerceIn(0f, 1f)
+    val progressFraction = if (currentLevel >= 100) 1f else (xpInCurrentLevel.toFloat() / nextLevelDelta.toFloat()).coerceIn(0f, 1f)
+    val nextLevelXp = levelBaseXp + nextLevelDelta
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -68,7 +76,6 @@ fun ProfileScreen(
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // Sign Out Button (placed elegantly)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onSignOut) {
                         Text("Sign Out", color = MaterialTheme.colorScheme.error)

@@ -8,6 +8,7 @@ import com.yourapp.productivity.domain.repository.CompletionHistoryRepository
 import com.yourapp.productivity.domain.repository.TaskRepository
 import com.yourapp.productivity.domain.repository.UserRepository
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import java.util.*
 import javax.inject.Inject
 
@@ -21,10 +22,13 @@ class CompleteTaskUseCase @Inject constructor(
     suspend operator fun invoke(task: Task) {
         val now = System.currentTimeMillis()
         
+        val subtasks = taskRepository.getSubtasksForTask(task.id).first()
+        val totalSubtaskXp = subtasks.filter { it.isCompleted }.size * (task.difficulty.xpAward * 0.1).toInt()
+        
         val completedTask = task.copy(isCompleted = true, completedAt = now)
         taskRepository.updateTask(completedTask)
 
-        val xpEarned = task.difficulty.xpAward
+        val xpEarned = task.difficulty.xpAward - totalSubtaskXp
         val history = CompletionHistory(
             taskId = task.id,
             completedAt = now,
@@ -37,7 +41,7 @@ class CompleteTaskUseCase @Inject constructor(
             val userProgress = userRepository.getUserProgress(userId).firstOrNull()
             if (userProgress != null) {
                 val newXp = userProgress.totalXp + xpEarned
-                val newLevel = (newXp / 100) + 1
+                val newLevel = calculateLevel(newXp)
                 
                 var currentStreak = userProgress.currentStreak
                 var longestStreak = userProgress.longestStreak
@@ -78,6 +82,19 @@ class CompleteTaskUseCase @Inject constructor(
         }
 
         evaluateAchievementsUseCase()
+    }
+
+    private fun calculateLevel(totalXp: Int): Int {
+        var xpNeeded = 400
+        var currentLevel = 1
+        var remainingXp = totalXp
+        
+        while (remainingXp >= xpNeeded && currentLevel < 100) {
+            remainingXp -= xpNeeded
+            currentLevel++
+            xpNeeded += 100
+        }
+        return currentLevel
     }
 
     private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {

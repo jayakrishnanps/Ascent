@@ -100,11 +100,12 @@ fun TaskListScreen(
                         EmptyStateMessage("No active quests. Time to rest!")
                     }
                 } else {
-                    items(uiState.todayTasks, key = { it.id }) { task ->
+                    items(uiState.todayTasks, key = { it.task.id }) { taskWithSubtasks ->
                         TaskItem(
-                            task = task,
-                            onClick = { onTaskClick(task.id) },
-                            onCompleteClick = { viewModel.completeTask(task) },
+                            taskWithSubtasks = taskWithSubtasks,
+                            onClick = { onTaskClick(taskWithSubtasks.task.id) },
+                            onCompleteClick = { viewModel.completeTask(taskWithSubtasks) },
+                            onSubtaskToggle = { subtask -> viewModel.toggleSubtask(taskWithSubtasks.task, subtask) },
                             isFuture = false
                         )
                     }
@@ -131,11 +132,12 @@ fun TaskListScreen(
                         EmptyStateMessage("No future trials on your radar.")
                     }
                 } else {
-                    items(uiState.upcomingTasks, key = { it.id }) { task ->
+                    items(uiState.upcomingTasks, key = { it.task.id }) { taskWithSubtasks ->
                         TaskItem(
-                            task = task,
-                            onClick = { onTaskClick(task.id) },
-                            onCompleteClick = { viewModel.completeTask(task) },
+                            taskWithSubtasks = taskWithSubtasks,
+                            onClick = { onTaskClick(taskWithSubtasks.task.id) },
+                            onCompleteClick = { viewModel.completeTask(taskWithSubtasks) },
+                            onSubtaskToggle = { subtask -> viewModel.toggleSubtask(taskWithSubtasks.task, subtask) },
                             isFuture = true
                         )
                     }
@@ -262,11 +264,16 @@ fun EmptyStateMessage(message: String) {
 
 @Composable
 fun TaskItem(
-    task: Task,
+    taskWithSubtasks: com.yourapp.productivity.domain.model.TaskWithSubtasks,
     onClick: () -> Unit,
     onCompleteClick: () -> Unit,
+    onSubtaskToggle: (com.yourapp.productivity.data.local.database.entities.Subtask) -> Unit,
     isFuture: Boolean
 ) {
+    val task = taskWithSubtasks.task
+    val subtasks = taskWithSubtasks.subtasks
+    val allSubtasksCompleted = subtasks.isEmpty() || subtasks.all { it.isCompleted }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -293,7 +300,8 @@ fun TaskItem(
                         .background(if (isFuture) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    val xpReward = when(task.difficulty) { Difficulty.HARD -> 150; Difficulty.MEDIUM -> 50; Difficulty.EASY -> 25 }
+                    val totalSubtaskXp = subtasks.filter { it.isCompleted }.size * (task.difficulty.xpAward * 0.1).toInt()
+                    val xpReward = task.difficulty.xpAward - totalSubtaskXp
                     Text(
                         text = "+$xpReward XP",
                         style = MaterialTheme.typography.labelMedium,
@@ -322,6 +330,35 @@ fun TaskItem(
                     )
                 }
             }
+            
+            if (subtasks.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    subtasks.forEach { subtask ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSubtaskToggle(subtask) }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Checkbox(
+                                checked = subtask.isCompleted,
+                                onCheckedChange = { onSubtaskToggle(subtask) },
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = subtask.title,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    textDecoration = if (subtask.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                                ),
+                                color = if (subtask.isCompleted) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
 
             Row(
                 modifier = Modifier
@@ -332,14 +369,15 @@ fun TaskItem(
             ) {
                 IconButton(
                     onClick = onCompleteClick,
+                    enabled = allSubtasksCompleted,
                     modifier = Modifier
                         .size(32.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), CircleShape)
+                        .border(1.dp, if (allSubtasksCompleted) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Complete",
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = if (allSubtasksCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -354,9 +392,10 @@ fun DifficultyBadge(difficulty: Difficulty, isFuture: Boolean) {
         Triple(MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
     } else {
         when (difficulty) {
-            Difficulty.EASY -> Triple(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
+            Difficulty.LOW -> Triple(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
             Difficulty.MEDIUM -> Triple(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
-            Difficulty.HARD -> Triple(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
+            Difficulty.HIGH -> Triple(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
+            Difficulty.VERY_HIGH -> Triple(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer, MaterialTheme.colorScheme.error)
         }
     }
 

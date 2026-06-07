@@ -2,43 +2,41 @@ package com.yourapp.productivity.ui.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yourapp.productivity.data.local.database.entities.Subtask
 import com.yourapp.productivity.data.local.database.entities.Task
-import com.yourapp.productivity.domain.model.Difficulty
-import com.yourapp.productivity.domain.model.RecurrenceType
+import com.yourapp.productivity.domain.model.TaskWithSubtasks
 import com.yourapp.productivity.domain.repository.TaskRepository
 import com.yourapp.productivity.domain.utils.DateUtils
 import com.yourapp.productivity.domain.usecase.CompleteTaskUseCase
+import com.yourapp.productivity.domain.usecase.ToggleSubtaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class TaskListUiState(
     val isLoading: Boolean = false,
-    val todayTasks: List<Task> = listOf(
-        Task(id = "1", title = "Morning Meditation", description = "10 minutes of mindfulness", dueDate = System.currentTimeMillis(), difficulty = Difficulty.EASY, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = null, weeklyDays = null),
-        Task(id = "2", title = "Workout", description = "Gym session", dueDate = System.currentTimeMillis(), difficulty = Difficulty.HARD, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = null, weeklyDays = null),
-        Task(id = "3", title = "Read 20 pages", description = "Book: Clean Code", dueDate = System.currentTimeMillis(), difficulty = Difficulty.MEDIUM, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.DAILY, recurrenceEndDate = null, weeklyDays = null)
-    ),
-    val upcomingTasks: List<Task> = listOf(
-        Task(id = "4", title = "Weekly Review", description = "Plan next week", dueDate = System.currentTimeMillis() + 86400000, difficulty = Difficulty.MEDIUM, isCompleted = false, completedAt = null, recurrenceType = RecurrenceType.WEEKLY, recurrenceEndDate = null, weeklyDays = null)
-    ),
+    val todayTasks: List<TaskWithSubtasks> = emptyList(),
+    val upcomingTasks: List<TaskWithSubtasks> = emptyList(),
     val error: String? = null
 )
 
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
-    private val completeTaskUseCase: CompleteTaskUseCase
+    private val completeTaskUseCase: CompleteTaskUseCase,
+    private val toggleSubtaskUseCase: ToggleSubtaskUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(TaskListUiState())
+    private val _uiState = MutableStateFlow(TaskListUiState(isLoading = true))
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
     init {
-        // loadTasks() // Temporarily disabled for mock data
+        loadTasks()
     }
 
     private fun loadTasks() {
@@ -47,8 +45,12 @@ class TaskListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 taskRepository.getTasksForToday(todayEnd).collect { todayList ->
+                    val withSubtasks = todayList.map { task ->
+                        val subtasks = taskRepository.getSubtasksForTask(task.id).first()
+                        TaskWithSubtasks(task, subtasks)
+                    }
                     _uiState.value = _uiState.value.copy(
-                        todayTasks = todayList,
+                        todayTasks = withSubtasks,
                         isLoading = false
                     )
                 }
@@ -60,8 +62,12 @@ class TaskListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 taskRepository.getUpcomingTasks(todayEnd).collect { upcomingList ->
+                    val withSubtasks = upcomingList.map { task ->
+                        val subtasks = taskRepository.getSubtasksForTask(task.id).first()
+                        TaskWithSubtasks(task, subtasks)
+                    }
                     _uiState.value = _uiState.value.copy(
-                        upcomingTasks = upcomingList,
+                        upcomingTasks = withSubtasks,
                         isLoading = false
                     )
                 }
@@ -71,10 +77,23 @@ class TaskListViewModel @Inject constructor(
         }
     }
 
-    fun completeTask(task: Task) {
+    fun completeTask(taskWithSubtasks: TaskWithSubtasks) {
+        val allSubtasksCompleted = taskWithSubtasks.subtasks.all { it.isCompleted }
+        if (!allSubtasksCompleted) return
+        
         viewModelScope.launch {
             try {
-                completeTaskUseCase(task)
+                completeTaskUseCase(taskWithSubtasks.task)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = e.message)
+            }
+        }
+    }
+    
+    fun toggleSubtask(task: Task, subtask: Subtask) {
+        viewModelScope.launch {
+            try {
+                toggleSubtaskUseCase(task, subtask)
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = e.message)
             }

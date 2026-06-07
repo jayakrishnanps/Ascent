@@ -21,6 +21,8 @@ class CompleteTaskUseCaseTest {
 
     class FakeTaskRepository : TaskRepository {
         val tasks = mutableListOf<Task>()
+        val subtasks = mutableListOf<com.yourapp.productivity.data.local.database.entities.Subtask>()
+        
         override fun getPendingTasks(): Flow<List<Task>> = flowOf(tasks.filter { !it.isCompleted })
         override fun getTasksForToday(todayEnd: Long): Flow<List<Task>> = flowOf(emptyList())
         override fun getUpcomingTasks(todayEnd: Long): Flow<List<Task>> = flowOf(emptyList())
@@ -31,6 +33,15 @@ class CompleteTaskUseCaseTest {
             if (index != -1) tasks[index] = task else tasks.add(task)
         }
         override suspend fun deleteTask(task: Task) { tasks.remove(task) }
+        
+        override fun getSubtasksForTask(taskId: String): Flow<List<com.yourapp.productivity.data.local.database.entities.Subtask>> = flowOf(subtasks.filter { it.taskId == taskId })
+        override suspend fun getSubtaskById(subtaskId: String): com.yourapp.productivity.data.local.database.entities.Subtask? = subtasks.find { it.id == subtaskId }
+        override suspend fun insertSubtask(subtask: com.yourapp.productivity.data.local.database.entities.Subtask) { subtasks.add(subtask) }
+        override suspend fun updateSubtask(subtask: com.yourapp.productivity.data.local.database.entities.Subtask) {
+            val index = subtasks.indexOfFirst { it.id == subtask.id }
+            if (index != -1) subtasks[index] = subtask else subtasks.add(subtask)
+        }
+        override suspend fun deleteSubtask(subtask: com.yourapp.productivity.data.local.database.entities.Subtask) { subtasks.remove(subtask) }
     }
 
     class FakeUserRepository : UserRepository {
@@ -85,7 +96,7 @@ class CompleteTaskUseCaseTest {
             title = "Test",
             description = null,
             dueDate = System.currentTimeMillis(),
-            difficulty = Difficulty.EASY,
+            difficulty = Difficulty.LOW,
             isCompleted = false,
             completedAt = null,
             recurrenceType = RecurrenceType.DAILY,

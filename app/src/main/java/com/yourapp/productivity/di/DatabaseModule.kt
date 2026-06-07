@@ -32,6 +32,10 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideSubtaskDao(database: AppDatabase) = database.subtaskDao()
+
+    @Provides
+    @Singleton
     fun provideCompletionHistoryDao(database: AppDatabase) = database.completionHistoryDao()
 
     @Provides

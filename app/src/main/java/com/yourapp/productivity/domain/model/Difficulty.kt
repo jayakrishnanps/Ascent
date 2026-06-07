@@ -1,7 +1,8 @@
 package com.yourapp.productivity.domain.model
 
 enum class Difficulty(val xpAward: Int) {
-    EASY(10),
-    MEDIUM(20),
-    HARD(30)
+    LOW(50),
+    MEDIUM(100),
+    HIGH(200),
+    VERY_HIGH(400)
 }

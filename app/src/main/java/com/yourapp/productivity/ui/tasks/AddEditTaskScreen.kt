@@ -148,6 +148,48 @@ fun AddEditTaskScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text("Subtasks", style = MaterialTheme.typography.titleMedium)
+            uiState.subtasks.forEach { subtask ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = subtask.title, modifier = Modifier.weight(1f))
+                    IconButton(onClick = { viewModel.removeSubtask(subtask) }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Remove subtask", tint = MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = uiState.newSubtaskTitle,
+                    onValueChange = { viewModel.updateNewSubtaskTitle(it) },
+                    label = { Text("New Subtask") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                Button(
+                    onClick = { viewModel.addSubtask() },
+                    enabled = uiState.newSubtaskTitle.isNotBlank()
+                ) {
+                    Text("Add")
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text("Due Date: ${formatDate(uiState.dueDate)}", style = MaterialTheme.typography.bodyLarge)
             Button(onClick = { viewModel.updateDueDate(System.currentTimeMillis()) }) {
                 Text("Set Due Date to Today")
