@@ -12,6 +12,7 @@ data class Task(
     val id: String = UUID.randomUUID().toString(),
     val title: String,
     val description: String?,
+    val startDate: Long?,
     val dueDate: Long?,
     val difficulty: Difficulty,
     val isCompleted: Boolean,

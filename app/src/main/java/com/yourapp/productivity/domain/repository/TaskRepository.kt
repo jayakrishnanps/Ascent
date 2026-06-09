@@ -2,12 +2,15 @@ package com.yourapp.productivity.domain.repository
 
 import com.yourapp.productivity.data.local.database.entities.Subtask
 import com.yourapp.productivity.data.local.database.entities.Task
+import com.yourapp.productivity.data.local.database.entities.TaskWithSubtasksRelation
 import kotlinx.coroutines.flow.Flow
 
 interface TaskRepository {
     fun getPendingTasks(): Flow<List<Task>>
     fun getTasksForToday(todayEnd: Long): Flow<List<Task>>
     fun getUpcomingTasks(todayEnd: Long): Flow<List<Task>>
+    fun getTasksWithSubtasksForToday(todayEnd: Long): Flow<List<TaskWithSubtasksRelation>>
+    fun getUpcomingTasksWithSubtasks(todayEnd: Long): Flow<List<TaskWithSubtasksRelation>>
     suspend fun getTaskById(taskId: String): Task?
     suspend fun insertTask(task: Task)
     suspend fun updateTask(task: Task)

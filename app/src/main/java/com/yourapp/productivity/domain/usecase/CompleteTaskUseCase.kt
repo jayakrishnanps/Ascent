@@ -119,7 +119,24 @@ class CompleteTaskUseCase @Inject constructor(
             RecurrenceType.WEEKLY -> {
                 val cal = Calendar.getInstance()
                 task.dueDate?.let { cal.timeInMillis = it }
-                cal.add(Calendar.DAY_OF_YEAR, 7)
+                
+                val weeklyDaysStr = task.weeklyDays
+                val weeklyDays = weeklyDaysStr?.split(",")?.mapNotNull { it.toIntOrNull() }?.toSet() ?: emptySet()
+                
+                if (weeklyDays.isNotEmpty()) {
+                    var currentDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1
+                    var daysToAdd = 7
+                    for (i in 1..7) {
+                        val nextDay = (currentDayOfWeek + i) % 7
+                        if (weeklyDays.contains(nextDay)) {
+                            daysToAdd = i
+                            break
+                        }
+                    }
+                    cal.add(Calendar.DAY_OF_YEAR, daysToAdd)
+                } else {
+                    cal.add(Calendar.DAY_OF_YEAR, 7)
+                }
                 cal.timeInMillis
             }
             RecurrenceType.NONE -> null

@@ -19,6 +19,7 @@ import javax.inject.Inject
 data class AddEditTaskUiState(
     val title: String = "",
     val description: String = "",
+    val startDate: Long? = null,
     val dueDate: Long? = null,
     val difficulty: Difficulty = Difficulty.LOW,
     val recurrenceType: RecurrenceType = RecurrenceType.NONE,
@@ -56,6 +57,7 @@ class AddEditTaskViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         title = task.title,
                         description = task.description ?: "",
+                        startDate = task.startDate,
                         dueDate = task.dueDate,
                         difficulty = task.difficulty,
                         recurrenceType = task.recurrenceType,
@@ -78,6 +80,10 @@ class AddEditTaskViewModel @Inject constructor(
 
     fun updateDifficulty(difficulty: Difficulty) {
         _uiState.value = _uiState.value.copy(difficulty = difficulty)
+    }
+
+    fun updateStartDate(startDate: Long?) {
+        _uiState.value = _uiState.value.copy(startDate = startDate)
     }
 
     fun updateDueDate(dueDate: Long?) {
@@ -137,11 +143,32 @@ class AddEditTaskViewModel @Inject constructor(
             currentState.weeklyDays.joinToString(",")
         } else null
 
+        var initialDueDate = currentState.dueDate
+        if (currentState.recurrenceType == RecurrenceType.WEEKLY && currentState.weeklyDays.isNotEmpty() && initialDueDate != null) {
+            // Check if initialDueDate is on a selected day
+            val cal = java.util.Calendar.getInstance()
+            cal.timeInMillis = initialDueDate
+            val currentDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK) - 1 // 0-indexed (Sunday = 0)
+            
+            if (!currentState.weeklyDays.contains(currentDayOfWeek)) {
+                // Find next valid day
+                for (i in 1..7) {
+                    val nextDay = (currentDayOfWeek + i) % 7
+                    if (currentState.weeklyDays.contains(nextDay)) {
+                        cal.add(java.util.Calendar.DAY_OF_YEAR, i)
+                        initialDueDate = cal.timeInMillis
+                        break
+                    }
+                }
+            }
+        }
+
         val task = Task(
             id = generatedTaskId,
             title = currentState.title,
             description = currentState.description.ifBlank { null },
-            dueDate = currentState.dueDate,
+            startDate = currentState.startDate,
+            dueDate = initialDueDate,
             difficulty = currentState.difficulty,
             isCompleted = false,
             completedAt = null,

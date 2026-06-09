@@ -4,6 +4,7 @@ import com.yourapp.productivity.data.local.database.dao.SubtaskDao
 import com.yourapp.productivity.data.local.database.dao.TaskDao
 import com.yourapp.productivity.data.local.database.entities.Subtask
 import com.yourapp.productivity.data.local.database.entities.Task
+import com.yourapp.productivity.data.local.database.entities.TaskWithSubtasksRelation
 import com.yourapp.productivity.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -16,9 +17,21 @@ class TaskRepositoryImpl @Inject constructor(
 ) : TaskRepository {
     override fun getPendingTasks(): Flow<List<Task>> = taskDao.getPendingTasks()
 
-    override fun getTasksForToday(todayEnd: Long): Flow<List<Task>> = taskDao.getTasksForToday(todayEnd)
+    override fun getTasksForToday(todayEnd: Long): Flow<List<Task>> {
+        return taskDao.getTasksForToday(todayEnd)
+    }
 
-    override fun getUpcomingTasks(todayEnd: Long): Flow<List<Task>> = taskDao.getUpcomingTasks(todayEnd)
+    override fun getUpcomingTasks(todayEnd: Long): Flow<List<Task>> {
+        return taskDao.getUpcomingTasks(todayEnd)
+    }
+    
+    override fun getTasksWithSubtasksForToday(todayEnd: Long): Flow<List<TaskWithSubtasksRelation>> {
+        return taskDao.getTasksWithSubtasksForToday(todayEnd)
+    }
+
+    override fun getUpcomingTasksWithSubtasks(todayEnd: Long): Flow<List<TaskWithSubtasksRelation>> {
+        return taskDao.getUpcomingTasksWithSubtasks(todayEnd)
+    }
 
     override suspend fun getTaskById(taskId: String): Task? = taskDao.getTaskById(taskId)
 

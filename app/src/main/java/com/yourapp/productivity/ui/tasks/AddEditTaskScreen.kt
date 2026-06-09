@@ -190,9 +190,28 @@ fun AddEditTaskScreen(
             HorizontalDivider()
             Spacer(modifier = Modifier.height(8.dp))
 
+            Text("Start Date: ${formatDate(uiState.startDate)}", style = MaterialTheme.typography.bodyLarge)
+            Button(onClick = { viewModel.updateStartDate(System.currentTimeMillis()) }) {
+                Text("Set Start Date to Today")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text("Due Date: ${formatDate(uiState.dueDate)}", style = MaterialTheme.typography.bodyLarge)
             Button(onClick = { viewModel.updateDueDate(System.currentTimeMillis()) }) {
                 Text("Set Due Date to Today")
+            }
+
+            if (uiState.recurrenceType != RecurrenceType.NONE) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("End Date: ${formatDate(uiState.recurrenceEndDate)}", style = MaterialTheme.typography.bodyLarge)
+                Button(onClick = { 
+                    val cal = Calendar.getInstance()
+                    cal.add(Calendar.MONTH, 1)
+                    viewModel.updateRecurrenceEndDate(cal.timeInMillis) 
+                }) {
+                    Text("Set End Date (1 Month from now)")
+                }
             }
             
             Spacer(modifier = Modifier.height(64.dp))

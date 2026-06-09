@@ -9,6 +9,9 @@ import com.yourapp.productivity.domain.repository.TaskRepository
 import com.yourapp.productivity.domain.utils.DateUtils
 import com.yourapp.productivity.domain.usecase.CompleteTaskUseCase
 import com.yourapp.productivity.domain.usecase.ToggleSubtaskUseCase
+import com.yourapp.productivity.domain.repository.UserRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.yourapp.productivity.domain.usecase.calculateLevel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,14 +25,18 @@ data class TaskListUiState(
     val isLoading: Boolean = false,
     val todayTasks: List<TaskWithSubtasks> = emptyList(),
     val upcomingTasks: List<TaskWithSubtasks> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val userLevel: Int = 1,
+    val userXpProgress: Float = 0f
 )
 
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val completeTaskUseCase: CompleteTaskUseCase,
-    private val toggleSubtaskUseCase: ToggleSubtaskUseCase
+    private val toggleSubtaskUseCase: ToggleSubtaskUseCase,
+    private val userRepository: UserRepository,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TaskListUiState(isLoading = true))
@@ -37,6 +44,32 @@ class TaskListViewModel @Inject constructor(
 
     init {
         loadTasks()
+        loadUserProgress()
+    }
+
+    private fun loadUserProgress() {
+        val userId = firebaseAuth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.getUserProgress(userId).collect { progress ->
+                if (progress != null) {
+                    val currentLevelXp = if (progress.currentLevel == 1) 0 else ((progress.currentLevel - 1) * 100 * Math.pow(1.5, (progress.currentLevel - 2).toDouble())).toInt()
+                    val nextLevelXp = (progress.currentLevel * 100 * Math.pow(1.5, (progress.currentLevel - 1).toDouble())).toInt()
+                    
+                    val xpIntoLevel = progress.totalXp - currentLevelXp
+                    val xpRequiredForNextLevel = nextLevelXp - currentLevelXp
+                    val xpProgress = if (xpRequiredForNextLevel > 0) {
+                        (xpIntoLevel.toFloat() / xpRequiredForNextLevel.toFloat()).coerceIn(0f, 1f)
+                    } else {
+                        0f
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        userLevel = progress.currentLevel,
+                        userXpProgress = xpProgress
+                    )
+                }
+            }
+        }
     }
 
     private fun loadTasks() {
@@ -44,10 +77,9 @@ class TaskListViewModel @Inject constructor(
         
         viewModelScope.launch {
             try {
-                taskRepository.getTasksForToday(todayEnd).collect { todayList ->
-                    val withSubtasks = todayList.map { task ->
-                        val subtasks = taskRepository.getSubtasksForTask(task.id).first()
-                        TaskWithSubtasks(task, subtasks)
+                taskRepository.getTasksWithSubtasksForToday(todayEnd).collect { todayList ->
+                    val withSubtasks = todayList.map { relation ->
+                        TaskWithSubtasks(relation.task, relation.subtasks)
                     }
                     _uiState.value = _uiState.value.copy(
                         todayTasks = withSubtasks,
@@ -61,10 +93,9 @@ class TaskListViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                taskRepository.getUpcomingTasks(todayEnd).collect { upcomingList ->
-                    val withSubtasks = upcomingList.map { task ->
-                        val subtasks = taskRepository.getSubtasksForTask(task.id).first()
-                        TaskWithSubtasks(task, subtasks)
+                taskRepository.getUpcomingTasksWithSubtasks(todayEnd).collect { upcomingList ->
+                    val withSubtasks = upcomingList.map { relation ->
+                        TaskWithSubtasks(relation.task, relation.subtasks)
                     }
                     _uiState.value = _uiState.value.copy(
                         upcomingTasks = withSubtasks,

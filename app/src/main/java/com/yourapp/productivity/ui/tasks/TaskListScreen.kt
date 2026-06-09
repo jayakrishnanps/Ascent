@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -60,6 +62,8 @@ fun TaskListScreen(
         topBar = {
             AscentTopAppBar(
                 onMenuClick = onMenuClick, 
+                level = uiState.userLevel,
+                xpProgress = uiState.userXpProgress,
                 photoUrl = authProfile?.photoUrl,
                 onFilterChange = { selectedFilter = it }
             )
@@ -91,16 +95,6 @@ fun TaskListScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item {
-                    val displayName = authProfile?.displayName ?: "Hero"
-                    Text(
-                        text = "Welcome back, $displayName!",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
-                
                 if (selectedFilter == "Active") {
                     item {
                         SectionHeader(title = "Active Quests", icon = Icons.Default.Whatshot, iconColor = MaterialTheme.colorScheme.primary)
@@ -152,7 +146,7 @@ fun TaskListScreen(
 }
 
 @Composable
-fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float = 0.75f, photoUrl: String? = null, onFilterChange: (String) -> Unit = {}) {
+fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float, photoUrl: String? = null, onFilterChange: (String) -> Unit = {}) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Box(
             modifier = Modifier
@@ -303,6 +297,7 @@ fun TaskItem(
     val task = taskWithSubtasks.task
     val subtasks = taskWithSubtasks.subtasks
     val allSubtasksCompleted = subtasks.isEmpty() || subtasks.all { it.isCompleted }
+    var expanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -363,28 +358,47 @@ fun TaskItem(
             
             if (subtasks.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    subtasks.forEach { subtask ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSubtaskToggle(subtask) }
-                                .padding(vertical = 4.dp)
-                        ) {
-                            Checkbox(
-                                checked = subtask.isCompleted,
-                                onCheckedChange = { onSubtaskToggle(subtask) },
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = subtask.title,
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    textDecoration = if (subtask.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
-                                ),
-                                color = if (subtask.isCompleted) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${subtasks.count { it.isCompleted }}/${subtasks.size} Subtasks",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (expanded) "Collapse subtasks" else "Expand subtasks",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (expanded) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        subtasks.forEach { subtask ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onSubtaskToggle(subtask) }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Checkbox(
+                                    checked = subtask.isCompleted,
+                                    onCheckedChange = { onSubtaskToggle(subtask) },
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = subtask.title,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        textDecoration = if (subtask.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                                    ),
+                                    color = if (subtask.isCompleted) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
