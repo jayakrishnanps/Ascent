@@ -28,6 +28,11 @@ import com.yourapp.productivity.ui.tasks.AddEditTaskScreen
 import com.yourapp.productivity.ui.tasks.TaskListScreen
 import com.yourapp.productivity.ui.achievements.AchievementsScreen
 import com.yourapp.productivity.ui.achievements.AddEditAchievementScreen
+import com.yourapp.productivity.ui.components.LevelUpDialog
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -40,6 +45,22 @@ fun AscentApp(
     
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val profileViewModel: com.yourapp.productivity.ui.profile.ProfileViewModel = hiltViewModel()
+    val profileUiState by profileViewModel.uiState.collectAsState()
+    val currentLevel = profileUiState.userProgress?.currentLevel ?: 0
+
+    var previousLevel by remember { mutableStateOf(currentLevel) }
+    var showLevelUpForLevel by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(currentLevel) {
+        if (previousLevel != 0 && currentLevel > previousLevel) {
+            showLevelUpForLevel = currentLevel
+        }
+        if (currentLevel != 0) {
+            previousLevel = currentLevel
+        }
+    }
 
     val showBars = currentRoute in listOf("tasks", "profile", "statistics", "settings")
 
@@ -256,6 +277,13 @@ fun AscentApp(
                 }
             }
         }
+    }
+
+    showLevelUpForLevel?.let { level ->
+        LevelUpDialog(
+            level = level,
+            onDismiss = { showLevelUpForLevel = null }
+        )
     }
 }
 

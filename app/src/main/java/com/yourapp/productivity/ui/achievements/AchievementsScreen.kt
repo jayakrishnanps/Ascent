@@ -87,15 +87,21 @@ fun AchievementItem(achievement: Achievement, onDeleteClick: () -> Unit) {
         (achievement.currentProgress.toFloat() / achievement.targetValue.toFloat()).coerceIn(0f, 1f)
     } else 1f
 
+    val isEarned = achievement.isEarned
+    
+    val containerColor = if (isEarned) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val borderColor = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+    val iconColor = if (isEarned) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val iconBgColor = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (achievement.isEarned) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceContainer
-        ),
-        border = BorderStroke(1.dp, if (achievement.isEarned) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = BorderStroke(if (isEarned) 2.dp else 1.dp, borderColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isEarned) 8.dp else 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,63 +110,80 @@ fun AchievementItem(achievement: Achievement, onDeleteClick: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(48.dp)
                             .clip(CircleShape)
-                            .background(if (achievement.isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+                            .background(iconBgColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.EmojiEvents,
-                            contentDescription = null,
-                            tint = if (achievement.isEarned) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            contentDescription = "Trophy",
+                            tint = iconColor,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
                             text = achievement.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Black,
+                            color = if (isEarned) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                         )
-                        if (achievement.isEarned && achievement.earnedAt != null) {
+                        if (isEarned && achievement.earnedAt != null) {
                             val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
                             Text(
                                 text = "Earned on ${formatter.format(Date(achievement.earnedAt))}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Text(
+                                text = "Locked",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
                 IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        Icons.Default.Delete, 
+                        contentDescription = "Delete", 
+                        tint = if (isEarned) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = achievement.description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isEarned) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(16.dp))
             
             if (achievement.conditionType == AchievementConditionType.COMPLETE_N_TIMES) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Progress", style = MaterialTheme.typography.labelMedium)
-                    Text("${achievement.currentProgress} / ${achievement.targetValue}", style = MaterialTheme.typography.labelMedium)
+                    Text("Quest Progress", style = MaterialTheme.typography.labelLarge, color = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                    Text("${achievement.currentProgress} / ${achievement.targetValue}", style = MaterialTheme.typography.labelLarge, color = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 LinearProgressIndicator(
                     progress = { progressFraction },
-                    modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
+                    color = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    trackColor = if (isEarned) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
                 )
             } else if (achievement.conditionType == AchievementConditionType.COMPLETE_UNTIL_END_DATE) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Condition", style = MaterialTheme.typography.labelMedium)
-                    Text(if (achievement.isEarned) "Completed" else "Waiting for end date", style = MaterialTheme.typography.labelMedium, color = if (achievement.isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Quest Status", style = MaterialTheme.typography.labelLarge, color = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        text = if (isEarned) "Mission Accomplished" else "Active", 
+                        style = MaterialTheme.typography.labelLarge, 
+                        fontWeight = FontWeight.Bold,
+                        color = if (isEarned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
