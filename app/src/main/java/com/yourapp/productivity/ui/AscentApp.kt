@@ -6,12 +6,9 @@ import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.credentials.CredentialManager
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -20,6 +17,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import com.yourapp.productivity.ui.auth.AuthScreen
 import com.yourapp.productivity.ui.profile.ProfileScreen
 import com.yourapp.productivity.ui.settings.SettingsScreen
@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AscentApp(
-    profileViewModel: com.yourapp.productivity.ui.profile.ProfileViewModel = hiltViewModel(),
     authViewModel: com.yourapp.productivity.ui.auth.AuthViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
@@ -205,8 +204,8 @@ fun AscentApp(
                             scope.launch {
                                 authViewModel.signOut()
                                 try {
-                                    androidx.credentials.CredentialManager.create(context)
-                                        .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+                                    CredentialManager.create(context)
+                                        .clearCredentialState(ClearCredentialStateRequest())
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                 }
@@ -231,8 +230,8 @@ fun AscentApp(
                             scope.launch {
                                 authViewModel.signOut()
                                 try {
-                                    androidx.credentials.CredentialManager.create(context)
-                                        .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+                                    CredentialManager.create(context)
+                                        .clearCredentialState(ClearCredentialStateRequest())
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                 }

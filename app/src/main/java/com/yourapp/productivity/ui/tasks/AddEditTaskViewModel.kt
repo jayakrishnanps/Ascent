@@ -105,7 +105,8 @@ class AddEditTaskViewModel @Inject constructor(
     fun updateRecurrenceEndDate(endDate: Long?) {
         val adjusted = endDate?.let {
             val tz = java.util.TimeZone.getDefault()
-            it - tz.getOffset(it)
+            val localMidnight = it - tz.getOffset(it)
+            localMidnight + (24 * 60 * 60 * 1000L) - 1 // End of day
         }
         _uiState.value = _uiState.value.copy(recurrenceEndDate = adjusted)
     }
@@ -146,6 +147,15 @@ class AddEditTaskViewModel @Inject constructor(
         } else null
 
         var initialStartDate = currentState.startDate
+        if (currentState.recurrenceType != RecurrenceType.NONE && initialStartDate == null) {
+            val cal = java.util.Calendar.getInstance()
+            cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            cal.set(java.util.Calendar.MINUTE, 0)
+            cal.set(java.util.Calendar.SECOND, 0)
+            cal.set(java.util.Calendar.MILLISECOND, 0)
+            initialStartDate = cal.timeInMillis
+        }
+
         if (currentState.recurrenceType == RecurrenceType.WEEKLY && currentState.weeklyDays.isNotEmpty() && initialStartDate != null) {
             // Check if initialStartDate is on a selected day
             val cal = java.util.Calendar.getInstance()
@@ -165,6 +175,25 @@ class AddEditTaskViewModel @Inject constructor(
             }
         }
 
+        var finalEndDate = currentState.recurrenceEndDate
+        if (currentState.recurrenceType == RecurrenceType.WEEKLY && currentState.weeklyDays.isNotEmpty() && finalEndDate != null) {
+            val endCal = java.util.Calendar.getInstance()
+            endCal.timeInMillis = finalEndDate
+            val endDayOfWeek = endCal.get(java.util.Calendar.DAY_OF_WEEK) - 1 // 0-indexed
+            
+            if (!currentState.weeklyDays.contains(endDayOfWeek)) {
+                // Find previous valid day
+                for (i in 1..7) {
+                    val prevDay = (endDayOfWeek - i + 7) % 7
+                    if (currentState.weeklyDays.contains(prevDay)) {
+                        endCal.add(java.util.Calendar.DAY_OF_YEAR, -i)
+                        finalEndDate = endCal.timeInMillis
+                        break
+                    }
+                }
+            }
+        }
+
         val task = Task(
             id = generatedTaskId,
             title = currentState.title,
@@ -174,7 +203,7 @@ class AddEditTaskViewModel @Inject constructor(
             isCompleted = false,
             completedAt = null,
             recurrenceType = currentState.recurrenceType,
-            recurrenceEndDate = currentState.recurrenceEndDate,
+            recurrenceEndDate = finalEndDate,
             weeklyDays = weeklyDaysString
         )
 

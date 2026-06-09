@@ -254,5 +254,3 @@ fun StatCard(title: String, value: String, subtitle: String, modifier: Modifier 
     }
 }
 
-}
-
