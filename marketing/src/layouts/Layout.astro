@@ -11,7 +11,7 @@ const { title } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Astro description" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
@@ -23,8 +23,27 @@ const { title } = Astro.props;
 	</body>
 </html>
 <style is:global>
+    /* Prevent auto-inflation of text on mobile WebKit/Blink */
+    html {
+        -moz-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
+    /* Safeguard for Android devices */
+    body * {
+        max-height: 999999px;
+    }
+
+    /* Fluid Typography & Spacing defaults */
+    h1 { font-size: clamp(2rem, 5vw + 1rem, 4rem) !important; }
+    h2 { font-size: clamp(1.5rem, 4vw + 1rem, 3rem) !important; }
+    h3 { font-size: clamp(1.2rem, 2vw + 0.8rem, 2rem) !important; }
+    p { font-size: clamp(1rem, 1.5vw + 0.5rem, 1.125rem) !important; }
+    
     html, body { background-color: #000000 !important; color: #e2e2e2; margin: 0; padding: 0; }
     .glass-panel {
+        padding: clamp(1.5rem, 3vw, 2.5rem) !important;
         background: rgba(120, 50, 217, 0.05);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
