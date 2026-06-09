@@ -30,7 +30,7 @@ export default {
           "surface-dim": "#131313",
           "secondary-fixed": "#ecdcff",
           "on-secondary": "#430089",
-          "background": "#131313",
+          "background": "#000000",
           "on-secondary-container": "#c8a4ff",
           "error-container": "#93000a",
           "surface-tint": "#d6baff",

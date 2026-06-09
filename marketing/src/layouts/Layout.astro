@@ -23,7 +23,7 @@ const { title } = Astro.props;
 	</body>
 </html>
 <style is:global>
-    body { background-color: #000000; color: #e2e2e2; }
+    html, body { background-color: #000000 !important; color: #e2e2e2; margin: 0; padding: 0; }
     .glass-panel {
         background: rgba(120, 50, 217, 0.05);
         backdrop-filter: blur(12px);
@@ -81,4 +81,11 @@ const { title } = Astro.props;
     .delay-100 { animation-delay: 100ms; }
     .delay-200 { animation-delay: 200ms; }
     .delay-300 { animation-delay: 300ms; }
+    @keyframes textShimmer {
+        0% { background-position: 200% center; }
+        100% { background-position: -200% center; }
+    }
+    .animate-text-shimmer {
+        animation: textShimmer 3s linear infinite;
+    }
 </style>
