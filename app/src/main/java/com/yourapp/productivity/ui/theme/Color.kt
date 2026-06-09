@@ -22,6 +22,22 @@ val OnError = Color(0xFF690005)
 val ErrorContainer = Color(0xFF93000A)
 val OnErrorContainer = Color(0xFFFFDAD6)
 
+// Green Theme Colors
+val GreenPrimary = Color(0xFF80DCA0)
+val GreenOnPrimary = Color(0xFF00391E)
+val GreenPrimaryContainer = Color(0xFF32D978)
+val GreenOnPrimaryContainer = Color(0xFF00210F)
+
+val GreenSecondary = Color(0xFFB5CCB8)
+val GreenOnSecondary = Color(0xFF213526)
+val GreenSecondaryContainer = Color(0xFF374B3C)
+val GreenOnSecondaryContainer = Color(0xFFD1E8D3)
+
+val GreenTertiary = Color(0xFFA1CFCF)
+val GreenOnTertiary = Color(0xFF003738)
+val GreenTertiaryContainer = Color(0xFF1E4E4E)
+val GreenOnTertiaryContainer = Color(0xFFBCEBEB)
+
 val Background = Color(0xFF131316)
 val OnBackground = Color(0xFFE4E1E6)
 

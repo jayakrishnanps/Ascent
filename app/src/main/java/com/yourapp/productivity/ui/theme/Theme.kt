@@ -31,14 +31,45 @@ private val DarkColorScheme = darkColorScheme(
     outlineVariant = OutlineVariant
 )
 
+private val GreenColorScheme = darkColorScheme(
+    primary = GreenPrimary,
+    onPrimary = GreenOnPrimary,
+    primaryContainer = GreenPrimaryContainer,
+    onPrimaryContainer = GreenOnPrimaryContainer,
+    secondary = GreenSecondary,
+    onSecondary = GreenOnSecondary,
+    secondaryContainer = GreenSecondaryContainer,
+    onSecondaryContainer = GreenOnSecondaryContainer,
+    tertiary = GreenTertiary,
+    onTertiary = GreenOnTertiary,
+    tertiaryContainer = GreenTertiaryContainer,
+    onTertiaryContainer = GreenOnTertiaryContainer,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    background = Background,
+    onBackground = OnBackground,
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    outline = Outline,
+    outlineVariant = OutlineVariant
+)
+
 @Composable
 fun AscentTheme(
     themeMode: String = "DARK", // Defaulting to DARK aesthetic
     content: @Composable () -> Unit
 ) {
-    // We apply the dark color scheme universally to match the specific UI design language.
+    val colorScheme = when (themeMode.uppercase()) {
+        "GREEN" -> GreenColorScheme
+        else -> DarkColorScheme
+    }
+
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = colorScheme,
         typography = Typography,
         content = content
     )

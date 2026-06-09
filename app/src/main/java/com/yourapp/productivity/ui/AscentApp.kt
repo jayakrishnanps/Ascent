@@ -43,7 +43,6 @@ fun AscentApp(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val showBars = currentRoute in listOf("tasks", "profile", "statistics", "settings")
-    var showDeleteAccountDialog by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -80,27 +79,6 @@ fun AscentApp(
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                    label = { Text("Achievements") },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Settings") },
-                    selected = currentRoute == "settings",
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("settings") {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
                     icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
                     label = { Text("Statistics") },
                     selected = currentRoute == "statistics",
@@ -128,64 +106,24 @@ fun AscentApp(
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
-                Spacer(Modifier.weight(1f))
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
-                    label = { Text("Delete Account", color = MaterialTheme.colorScheme.error) },
-                    selected = false,
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text("Settings") },
+                    selected = currentRoute == "settings",
                     onClick = {
                         scope.launch { drawerState.close() }
-                        showDeleteAccountDialog = true
+                        navController.navigate("settings") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+                Spacer(Modifier.weight(1f))
             }
         }
     ) {
-        if (showDeleteAccountDialog) {
-            val context = androidx.compose.ui.platform.LocalContext.current
-            AlertDialog(
-                onDismissRequest = { showDeleteAccountDialog = false },
-                title = { Text("Delete Account") },
-                text = { Text("Are you sure you want to permanently delete your account? This will erase all your tasks, progress, and authentication data. This action cannot be undone.") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            profileViewModel.deleteAccount(
-                                onSuccess = {
-                                    showDeleteAccountDialog = false
-                                    scope.launch {
-                                        authViewModel.signOut()
-                                        try {
-                                            androidx.credentials.CredentialManager.create(context)
-                                                .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        }
-                                        navController.navigate("auth") {
-                                            popUpTo(navController.graph.id) { inclusive = true }
-                                        }
-                                    }
-                                },
-                                onError = { e ->
-                                    showDeleteAccountDialog = false
-                                    // Could show a snackbar here
-                                    e.printStackTrace()
-                                }
-                            )
-                        }
-                    ) {
-                        Text("Delete", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteAccountDialog = false }) {
-                        Text("Cancel")
-                    }
-                }
-            )
-        }
-        
         Scaffold(
             bottomBar = {
                 if (showBars) {
@@ -286,8 +224,23 @@ fun AscentApp(
                     )
                 }
                 composable("settings") {
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     SettingsScreen(
-                        onMenuClick = { scope.launch { drawerState.open() } }
+                        onMenuClick = { scope.launch { drawerState.open() } },
+                        onSignOut = {
+                            scope.launch {
+                                authViewModel.signOut()
+                                try {
+                                    androidx.credentials.CredentialManager.create(context)
+                                        .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                                navController.navigate("auth") {
+                                    popUpTo(navController.graph.id) { inclusive = true }
+                                }
+                            }
+                        }
                     )
                 }
                 composable("achievements") {

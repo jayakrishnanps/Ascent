@@ -35,11 +35,14 @@ import com.yourapp.productivity.ui.auth.AuthViewModel
 @Composable
 fun SettingsScreen(
     onMenuClick: () -> Unit,
+    onSignOut: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    profileViewModel: com.yourapp.productivity.ui.profile.ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val authProfile by authViewModel.userProfile.collectAsState()
+    var showDeleteAccountDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -99,10 +102,8 @@ fun SettingsScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(text = "App Theme Color", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.outline)
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        ThemeColorOption(Color(0xFFAA73FF), isSelected = true) // Violet
-                        ThemeColorOption(Color(0xFF32D978), isSelected = false) // Green
-                        ThemeColorOption(Color(0xFF32A8D9), isSelected = false) // Blue
-                        ThemeColorOption(Color(0xFFD93240), isSelected = false) // Red
+                        ThemeColorOption(Color(0xFFAA73FF), isSelected = uiState.selectedThemeColor == "DARK", onClick = { viewModel.setTheme("DARK") }) // Violet
+                        ThemeColorOption(Color(0xFF32D978), isSelected = uiState.selectedThemeColor == "GREEN", onClick = { viewModel.setTheme("GREEN") }) // Green
                     }
                 }
             }
@@ -129,7 +130,7 @@ fun SettingsScreen(
             // Danger Zone Section
             SettingsSection(title = "Danger Zone", icon = Icons.Default.Delete, iconColor = MaterialTheme.colorScheme.error) {
                 Button(
-                    onClick = { /* UI Only */ },
+                    onClick = { showDeleteAccountDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(12.dp),
@@ -138,6 +139,37 @@ fun SettingsScreen(
                     Text(text = "Delete Account", color = MaterialTheme.colorScheme.error)
                 }
             }
+        }
+        
+        if (showDeleteAccountDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteAccountDialog = false },
+                title = { Text("Delete Account") },
+                text = { Text("Are you sure you want to permanently delete your account? This will erase all your tasks, progress, and authentication data. This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            profileViewModel.deleteAccount(
+                                onSuccess = {
+                                    showDeleteAccountDialog = false
+                                    onSignOut()
+                                },
+                                onError = { e ->
+                                    showDeleteAccountDialog = false
+                                    e.printStackTrace()
+                                }
+                            )
+                        }
+                    ) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteAccountDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -165,7 +197,7 @@ fun SettingsSection(
 }
 
 @Composable
-fun ThemeColorOption(color: Color, isSelected: Boolean) {
+fun ThemeColorOption(color: Color, isSelected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(40.dp)
@@ -176,7 +208,7 @@ fun ThemeColorOption(color: Color, isSelected: Boolean) {
                 color = if (isSelected) Color.White else Color.Transparent,
                 shape = CircleShape
             )
-            .clickable { /* UI Only */ }
+            .clickable(onClick = onClick)
     )
 }
 

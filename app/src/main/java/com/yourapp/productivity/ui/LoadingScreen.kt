@@ -66,7 +66,7 @@ fun LoadingScreen(onLoadingComplete: (isAuthenticated: Boolean) -> Unit) {
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFF7832D9).copy(alpha = 0.2f), // Inverse Primary approximation
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
                             Color.Transparent
                         )
                     )
