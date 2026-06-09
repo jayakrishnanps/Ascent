@@ -51,12 +51,12 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        // loadProfileData() // Temporarily disabled for mock data
+        loadProfileData()
         observeTheme()
     }
 
     private fun loadProfileData() {
-        val userId = firebaseAuth.currentUser?.uid ?: "mock_user"
+        val userId = firebaseAuth.currentUser?.uid ?: "mock_user_123"
         
         viewModelScope.launch {
             userRepository.getUserProgress(userId).collect { progress ->

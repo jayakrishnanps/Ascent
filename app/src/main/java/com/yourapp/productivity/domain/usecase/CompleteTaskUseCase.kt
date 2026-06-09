@@ -28,7 +28,7 @@ class CompleteTaskUseCase @Inject constructor(
         val completedTask = task.copy(isCompleted = true, completedAt = now)
         taskRepository.updateTask(completedTask)
 
-        val xpEarned = task.difficulty.xpAward - totalSubtaskXp
+        val xpEarned = maxOf(0, task.difficulty.xpAward - totalSubtaskXp)
         val history = CompletionHistory(
             taskId = task.id,
             completedAt = now,
@@ -36,11 +36,10 @@ class CompleteTaskUseCase @Inject constructor(
         )
         completionHistoryRepository.insert(history)
 
-        val userId = firebaseAuth.currentUser?.uid
-        if (userId != null) {
-            val userProgress = userRepository.getUserProgress(userId).firstOrNull()
-            if (userProgress != null) {
-                val newXp = userProgress.totalXp + xpEarned
+        val userId = firebaseAuth.currentUser?.uid ?: "mock_user_123"
+        val userProgress = userRepository.getUserProgress(userId).firstOrNull()
+        if (userProgress != null) {
+            val newXp = userProgress.totalXp + xpEarned
                 val newLevel = calculateLevel(newXp)
                 
                 var currentStreak = userProgress.currentStreak
@@ -75,7 +74,6 @@ class CompleteTaskUseCase @Inject constructor(
                 )
                 userRepository.updateUserProgress(updatedProgress)
             }
-        }
 
         if (task.recurrenceType != RecurrenceType.NONE) {
             generateNextRecurrence(task)

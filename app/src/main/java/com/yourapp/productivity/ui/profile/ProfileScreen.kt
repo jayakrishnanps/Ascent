@@ -155,15 +155,16 @@ fun ProfileScreen(
 @Composable
 fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float, photoUrl: String? = null) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-                .statusBarsPadding(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .statusBarsPadding()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -198,19 +199,17 @@ fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float, pho
                 }
             }
             
-            Text(
-                text = "ASCENT",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 2.sp
-            )
-            
-            IconButton(
-                onClick = { /* Quick Action */ },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Transparent, CircleShape)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.Center).padding(start = 24.dp)
             ) {
+                Text(
+                    text = "ASCENT",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 2.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Icon(Icons.Default.FlashOn, contentDescription = "Quick Action", tint = MaterialTheme.colorScheme.primary)
             }
         }

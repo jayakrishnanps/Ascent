@@ -17,10 +17,14 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,11 +53,16 @@ fun TaskListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val authProfile by authViewModel.userProfile.collectAsState()
+    var selectedFilter by remember { mutableStateOf("Active") }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AscentTopAppBar(onMenuClick = onMenuClick, photoUrl = authProfile?.photoUrl)
+            AscentTopAppBar(
+                onMenuClick = onMenuClick, 
+                photoUrl = authProfile?.photoUrl,
+                onFilterChange = { selectedFilter = it }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -91,55 +100,46 @@ fun TaskListScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-                item {
-                    SectionHeader(title = "Active Quests", icon = Icons.Default.Whatshot, iconColor = MaterialTheme.colorScheme.primary)
-                }
-
-                if (uiState.todayTasks.isEmpty()) {
+                
+                if (selectedFilter == "Active") {
                     item {
-                        EmptyStateMessage("No active quests. Time to rest!")
+                        SectionHeader(title = "Active Quests", icon = Icons.Default.Whatshot, iconColor = MaterialTheme.colorScheme.primary)
                     }
-                } else {
-                    items(uiState.todayTasks, key = { it.task.id }) { taskWithSubtasks ->
-                        TaskItem(
-                            taskWithSubtasks = taskWithSubtasks,
-                            onClick = { onTaskClick(taskWithSubtasks.task.id) },
-                            onCompleteClick = { viewModel.completeTask(taskWithSubtasks) },
-                            onSubtaskToggle = { subtask -> viewModel.toggleSubtask(taskWithSubtasks.task, subtask) },
-                            isFuture = false
-                        )
-                    }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color.Transparent, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), Color.Transparent)
-                                )
+                    if (uiState.todayTasks.isEmpty()) {
+                        item {
+                            EmptyStateMessage("No active quests. Time to rest!")
+                        }
+                    } else {
+                        items(uiState.todayTasks, key = { it.task.id }) { taskWithSubtasks ->
+                            TaskItem(
+                                taskWithSubtasks = taskWithSubtasks,
+                                onClick = { onTaskClick(taskWithSubtasks.task.id) },
+                                onCompleteClick = { viewModel.completeTask(taskWithSubtasks) },
+                                onSubtaskToggle = { subtask -> viewModel.toggleSubtask(taskWithSubtasks.task, subtask) },
+                                isFuture = false
                             )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SectionHeader(title = "Future Trials", icon = Icons.Default.DateRange, iconColor = MaterialTheme.colorScheme.outlineVariant)
-                }
-
-                if (uiState.upcomingTasks.isEmpty()) {
-                    item {
-                        EmptyStateMessage("No future trials on your radar.")
+                        }
                     }
                 } else {
-                    items(uiState.upcomingTasks, key = { it.task.id }) { taskWithSubtasks ->
-                        TaskItem(
-                            taskWithSubtasks = taskWithSubtasks,
-                            onClick = { onTaskClick(taskWithSubtasks.task.id) },
-                            onCompleteClick = { viewModel.completeTask(taskWithSubtasks) },
-                            onSubtaskToggle = { subtask -> viewModel.toggleSubtask(taskWithSubtasks.task, subtask) },
-                            isFuture = true
-                        )
+                    item {
+                        SectionHeader(title = "Future Trials", icon = Icons.Default.DateRange, iconColor = MaterialTheme.colorScheme.outlineVariant)
+                    }
+
+                    if (uiState.upcomingTasks.isEmpty()) {
+                        item {
+                            EmptyStateMessage("No future trials on your radar.")
+                        }
+                    } else {
+                        items(uiState.upcomingTasks, key = { it.task.id }) { taskWithSubtasks ->
+                            TaskItem(
+                                taskWithSubtasks = taskWithSubtasks,
+                                onClick = { onTaskClick(taskWithSubtasks.task.id) },
+                                onCompleteClick = { viewModel.completeTask(taskWithSubtasks) },
+                                onSubtaskToggle = { subtask -> viewModel.toggleSubtask(taskWithSubtasks.task, subtask) },
+                                isFuture = true
+                            )
+                        }
                     }
                 }
                 
@@ -152,17 +152,18 @@ fun TaskListScreen(
 }
 
 @Composable
-fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float = 0.75f, photoUrl: String? = null) {
+fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float = 0.75f, photoUrl: String? = null, onFilterChange: (String) -> Unit = {}) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-                .statusBarsPadding(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .statusBarsPadding()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -197,20 +198,49 @@ fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int = 12, xpProgress: Float 
                 }
             }
             
-            Text(
-                text = "ASCENT",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 2.sp
-            )
-            
-            IconButton(
-                onClick = { /* Quick Action */ },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Transparent, CircleShape)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.Center).padding(start = 24.dp)
             ) {
+                Text(
+                    text = "ASCENT",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 2.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Icon(Icons.Default.FlashOn, contentDescription = "Quick Action", tint = MaterialTheme.colorScheme.primary)
+            }
+            
+            Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                var menuExpanded by remember { mutableStateOf(false) }
+                IconButton(
+                    onClick = { menuExpanded = true },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.Transparent, CircleShape)
+                ) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onSurface)
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("View Tasks") },
+                        onClick = {
+                            onFilterChange("Active")
+                            menuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("View Future Tasks") },
+                        onClick = {
+                            onFilterChange("Future")
+                            menuExpanded = false
+                        }
+                    )
+                }
             }
         }
         Box(
