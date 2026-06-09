@@ -11,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.domain.model.Difficulty
 import com.yourapp.productivity.domain.model.RecurrenceType
+import com.yourapp.productivity.utils.formatEnumName
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -114,7 +116,7 @@ fun AddEditTaskScreen(
                     FilterChip(
                         selected = uiState.difficulty == difficulty,
                         onClick = { viewModel.updateDifficulty(difficulty) },
-                        label = { Text(difficulty.name) }
+                        label = { Text(difficulty.name.formatEnumName()) }
                     )
                 }
             }
@@ -128,7 +130,7 @@ fun AddEditTaskScreen(
                     FilterChip(
                         selected = uiState.recurrenceType == type,
                         onClick = { viewModel.updateRecurrenceType(type) },
-                        label = { Text(type.name) }
+                        label = { Text(type.name.formatEnumName()) }
                     )
                 }
             }

@@ -7,8 +7,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.credentials.CredentialManager
-import androidx.credentials.ClearCredentialStateRequest
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -30,6 +28,7 @@ import com.yourapp.productivity.ui.achievements.AchievementsScreen
 import com.yourapp.productivity.ui.achievements.AddEditAchievementScreen
 import com.yourapp.productivity.ui.components.LevelUpDialog
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -50,12 +49,12 @@ fun AscentApp(
     val profileUiState by profileViewModel.uiState.collectAsState()
     val currentLevel = profileUiState.userProgress?.currentLevel ?: 0
 
-    var previousLevel by remember { mutableStateOf(currentLevel) }
-    var showLevelUpForLevel by remember { mutableStateOf<Int?>(null) }
+    var previousLevel by remember { mutableIntStateOf(currentLevel) }
+    val showLevelUpForLevel = remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(currentLevel) {
         if (previousLevel != 0 && currentLevel > previousLevel) {
-            showLevelUpForLevel = currentLevel
+            showLevelUpForLevel.value = currentLevel
         }
         if (currentLevel != 0) {
             previousLevel = currentLevel
@@ -219,17 +218,11 @@ fun AscentApp(
                     )
                 }
                 composable("profile") {
-                    val context = androidx.compose.ui.platform.LocalContext.current
                     ProfileScreen(
                         onSignOut = {
                             scope.launch {
                                 authViewModel.signOut()
-                                try {
-                                    CredentialManager.create(context)
-                                        .clearCredentialState(ClearCredentialStateRequest())
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
+                                // Local and Firebase sessions are cleared by AuthViewModel.
                                 navController.navigate("auth") {
                                     popUpTo(0) { inclusive = true }
                                 }
@@ -244,18 +237,12 @@ fun AscentApp(
                     )
                 }
                 composable("settings") {
-                    val context = androidx.compose.ui.platform.LocalContext.current
                     SettingsScreen(
                         onMenuClick = { scope.launch { drawerState.open() } },
                         onSignOut = {
                             scope.launch {
                                 authViewModel.signOut()
-                                try {
-                                    CredentialManager.create(context)
-                                        .clearCredentialState(ClearCredentialStateRequest())
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
+                                // Local and Firebase sessions are cleared by AuthViewModel.
                                 navController.navigate("auth") {
                                     popUpTo(0) { inclusive = true }
                                 }
@@ -279,10 +266,10 @@ fun AscentApp(
         }
     }
 
-    showLevelUpForLevel?.let { level ->
+    showLevelUpForLevel.value?.let { level ->
         LevelUpDialog(
             level = level,
-            onDismiss = { showLevelUpForLevel = null }
+            onDismiss = { showLevelUpForLevel.value = null }
         )
     }
 }

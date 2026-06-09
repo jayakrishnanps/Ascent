@@ -44,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.data.local.database.entities.Task
 import com.yourapp.productivity.domain.model.Difficulty
 
+import com.yourapp.productivity.utils.formatEnumName
 import coil.compose.AsyncImage
 import com.yourapp.productivity.ui.auth.AuthViewModel
 
@@ -105,7 +106,10 @@ fun TaskListScreen(
 
                     if (uiState.todayTasks.isEmpty()) {
                         item {
-                            EmptyStateMessage("No active quests. Time to rest!")
+                            EmptyStateMessage(
+                                title = "No Active Quests",
+                                subtitle = "You've conquered them all! Prepare for your next challenge."
+                            )
                         }
                     } else {
                         items(uiState.todayTasks, key = { it.task.id }) { taskWithSubtasks ->
@@ -125,7 +129,10 @@ fun TaskListScreen(
 
                     if (uiState.upcomingTasks.isEmpty()) {
                         item {
-                            EmptyStateMessage("No future trials on your radar.")
+                            EmptyStateMessage(
+                                title = "No Future Trials",
+                                subtitle = "Your path is clear. Enjoy the peace while it lasts."
+                            )
                         }
                     } else {
                         items(uiState.upcomingTasks, key = { it.task.id }) { taskWithSubtasks ->
@@ -267,22 +274,36 @@ fun SectionHeader(title: String, icon: ImageVector, iconColor: Color) {
 }
 
 @Composable
-fun EmptyStateMessage(message: String) {
+fun EmptyStateMessage(title: String, subtitle: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 24.dp),
+            .padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Outlined.CheckCircle,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.size(48.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = message,
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -307,16 +328,19 @@ fun TaskItem(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .animateContentSize(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isFuture) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+            containerColor = if (isFuture) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surface
         ),
-        border = BorderStroke(1.dp, if(isFuture) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        border = BorderStroke(
+            if (isFuture) 1.dp else 2.dp, 
+            if(isFuture) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isFuture) 0.dp else 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -326,16 +350,21 @@ fun TaskItem(
                 DifficultyBadge(difficulty = task.difficulty, isFuture = isFuture)
                 Box(
                     modifier = Modifier
-                        .background(if (isFuture) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .background(
+                            if (isFuture) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                            else MaterialTheme.colorScheme.primaryContainer, 
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     val totalSubtaskXp = subtasks.filter { it.isCompleted }.size * (task.difficulty.xpAward * 0.1).toInt()
                     val xpReward = task.difficulty.xpAward - totalSubtaskXp
                     Text(
                         text = "+$xpReward XP",
                         style = MaterialTheme.typography.labelMedium,
-                        color = if (isFuture) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                        color = if (isFuture) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
                     )
                 }
             }
@@ -343,13 +372,13 @@ fun TaskItem(
             Column {
                 Text(
                     text = task.title,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (isFuture) FontWeight.Medium else FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = if (isFuture) FontWeight.Medium else FontWeight.Black),
+                    color = if (isFuture) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (!task.description.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = task.description,
                         style = MaterialTheme.typography.bodyMedium,
@@ -361,16 +390,17 @@ fun TaskItem(
             }
             
             if (subtasks.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
+                    modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         text = "${subtasks.count { it.isCompleted }}/${subtasks.size} Subtasks",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold
                     )
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
@@ -380,27 +410,30 @@ fun TaskItem(
                 }
 
                 AnimatedVisibility(visible = expanded) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                         subtasks.forEach { subtask ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (subtask.isCompleted) MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f) else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha=0.3f))
                                     .clickable { onSubtaskToggle(subtask) }
-                                    .padding(vertical = 4.dp)
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
                             ) {
                                 Checkbox(
                                     checked = subtask.isCompleted,
                                     onCheckedChange = { onSubtaskToggle(subtask) },
                                     modifier = Modifier.size(24.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Text(
                                     text = subtask.title,
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        textDecoration = if (subtask.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                                        textDecoration = if (subtask.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
+                                        fontWeight = FontWeight.Medium
                                     ),
-                                    color = if (subtask.isCompleted) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (subtask.isCompleted) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -413,11 +446,11 @@ fun TaskItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 12.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
+                Button(
                     onClick = {
                         if (allSubtasksCompleted) {
                             onCompleteClick()
@@ -425,15 +458,23 @@ fun TaskItem(
                             android.widget.Toast.makeText(context, "Complete all subtasks first.", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     },
-                    modifier = Modifier
-                        .size(32.dp)
-                        .border(1.dp, if (allSubtasksCompleted) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), CircleShape)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (allSubtasksCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (allSubtasksCompleted) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Complete",
-                        tint = if (allSubtasksCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Complete",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
             }
@@ -448,22 +489,24 @@ fun DifficultyBadge(difficulty: Difficulty, isFuture: Boolean) {
     } else {
         when (difficulty) {
             Difficulty.LOW -> Triple(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
-            Difficulty.MEDIUM -> Triple(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
-            Difficulty.HIGH -> Triple(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
-            Difficulty.VERY_HIGH -> Triple(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer, MaterialTheme.colorScheme.error)
+            Difficulty.MEDIUM -> Triple(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f))
+            Difficulty.HIGH -> Triple(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f), MaterialTheme.colorScheme.onTertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.5f))
+            Difficulty.VERY_HIGH -> Triple(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
         }
     }
 
     Surface(
         color = bgColor,
         shape = RoundedCornerShape(percent = 50),
-        border = BorderStroke(1.dp, borderColor)
+        border = BorderStroke(if (difficulty == Difficulty.VERY_HIGH && !isFuture) 2.dp else 1.dp, borderColor),
+        shadowElevation = if (difficulty == Difficulty.VERY_HIGH && !isFuture) 4.dp else 0.dp
     ) {
         Text(
-            text = difficulty.name.lowercase().replaceFirstChar { it.uppercase() },
+            text = difficulty.name.formatEnumName(),
             color = textColor,
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            fontWeight = if (difficulty == Difficulty.VERY_HIGH && !isFuture) FontWeight.Black else FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         )
     }
 }
