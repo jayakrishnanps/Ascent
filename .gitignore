@@ -26,6 +26,7 @@ captures/
 /marketing/yarn-error.log*
 /marketing/yarn-debug.log*
 /marketing/pnpm-debug.log*
+
 # Added by code-review-graph
 .code-review-graph/
 .mcp.json
@@ -44,5 +45,7 @@ QODER.md
 .gemini/
 .vscode/
 
+# APKs and APK tool decoded directories
 Ascent*.apk
 *.idsig
+decoded_apk/
