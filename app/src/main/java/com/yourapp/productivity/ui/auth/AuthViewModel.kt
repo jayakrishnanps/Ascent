@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.yourapp.productivity.data.local.database.AppDatabase
 import com.yourapp.productivity.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 
 data class UserProfile(
     val uid: String,
@@ -28,7 +30,8 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val appDatabase: AppDatabase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -87,6 +90,9 @@ class AuthViewModel @Inject constructor(
 
     fun signOut() {
         firebaseAuth.signOut()
+        viewModelScope.launch(Dispatchers.IO) {
+            appDatabase.clearAllTables()
+        }
         _userProfile.value = null
         _uiState.value = _uiState.value.copy(isAuthenticated = false, error = null)
     }

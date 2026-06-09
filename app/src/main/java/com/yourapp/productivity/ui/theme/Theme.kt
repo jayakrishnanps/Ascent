@@ -58,6 +58,87 @@ private val GreenColorScheme = darkColorScheme(
     outlineVariant = OutlineVariant
 )
 
+private val RedColorScheme = darkColorScheme(
+    primary = RedPrimary,
+    onPrimary = RedOnPrimary,
+    primaryContainer = RedPrimaryContainer,
+    onPrimaryContainer = RedOnPrimaryContainer,
+    secondary = RedSecondary,
+    onSecondary = RedOnSecondary,
+    secondaryContainer = RedSecondaryContainer,
+    onSecondaryContainer = RedOnSecondaryContainer,
+    tertiary = RedTertiary,
+    onTertiary = RedOnTertiary,
+    tertiaryContainer = RedTertiaryContainer,
+    onTertiaryContainer = RedOnTertiaryContainer,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    background = Background,
+    onBackground = OnBackground,
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    outline = Outline,
+    outlineVariant = OutlineVariant
+)
+
+private val YellowColorScheme = darkColorScheme(
+    primary = YellowPrimary,
+    onPrimary = YellowOnPrimary,
+    primaryContainer = YellowPrimaryContainer,
+    onPrimaryContainer = YellowOnPrimaryContainer,
+    secondary = YellowSecondary,
+    onSecondary = YellowOnSecondary,
+    secondaryContainer = YellowSecondaryContainer,
+    onSecondaryContainer = YellowOnSecondaryContainer,
+    tertiary = YellowTertiary,
+    onTertiary = YellowOnTertiary,
+    tertiaryContainer = YellowTertiaryContainer,
+    onTertiaryContainer = YellowOnTertiaryContainer,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    background = Background,
+    onBackground = OnBackground,
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    outline = Outline,
+    outlineVariant = OutlineVariant
+)
+
+private val BlueColorScheme = darkColorScheme(
+    primary = BluePrimary,
+    onPrimary = BlueOnPrimary,
+    primaryContainer = BluePrimaryContainer,
+    onPrimaryContainer = BlueOnPrimaryContainer,
+    secondary = BlueSecondary,
+    onSecondary = BlueOnSecondary,
+    secondaryContainer = BlueSecondaryContainer,
+    onSecondaryContainer = BlueOnSecondaryContainer,
+    tertiary = BlueTertiary,
+    onTertiary = BlueOnTertiary,
+    tertiaryContainer = BlueTertiaryContainer,
+    onTertiaryContainer = BlueOnTertiaryContainer,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    background = Background,
+    onBackground = OnBackground,
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    outline = Outline,
+    outlineVariant = OutlineVariant
+)
+
 @Composable
 fun AscentTheme(
     themeMode: String = "DARK", // Defaulting to DARK aesthetic
@@ -65,6 +146,9 @@ fun AscentTheme(
 ) {
     val colorScheme = when (themeMode.uppercase()) {
         "GREEN" -> GreenColorScheme
+        "RED" -> RedColorScheme
+        "YELLOW" -> YellowColorScheme
+        "BLUE" -> BlueColorScheme
         else -> DarkColorScheme
     }
 

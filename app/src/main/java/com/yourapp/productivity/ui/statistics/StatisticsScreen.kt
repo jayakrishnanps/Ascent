@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import com.yourapp.productivity.ui.components.AscentTopAppBar
 import com.yourapp.productivity.ui.auth.AuthViewModel
 import androidx.compose.ui.layout.ContentScale
 
@@ -36,12 +36,14 @@ fun StatisticsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val authProfile by authViewModel.userProfile.collectAsState()
+    val photoUrl = authProfile?.photoUrl
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            StatisticsTopAppBar(
-                photoUrl = authProfile?.photoUrl,
+            AscentTopAppBar(
+                title = "STATISTICS",
+                photoUrl = photoUrl,
                 onMenuClick = onMenuClick
             )
         }
@@ -113,70 +115,6 @@ fun StatisticsScreen(
                 StatItemCard("XP This Week", "$xpSign${uiState.xpGainedThisWeek}", "XP", Modifier.weight(1f))
             }
         }
-    }
-}
-
-@Composable
-fun StatisticsTopAppBar(
-    photoUrl: String?,
-    onMenuClick: () -> Unit
-) {
-    Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .statusBarsPadding(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
-                        .clickable(onClick = onMenuClick)
-                ) {
-                    if (photoUrl != null) {
-                        AsyncImage(
-                            model = photoUrl,
-                            contentDescription = "Profile Picture",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(CircleShape)
-                        )
-                    } else {
-                        Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "STATISTICS",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            
-            IconButton(
-                onClick = { /* Quick Action */ },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Transparent, CircleShape)
-            ) {
-                Icon(Icons.Default.FlashOn, contentDescription = "Quick Action", tint = MaterialTheme.colorScheme.primary)
-            }
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(Color.Transparent, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), Color.Transparent)
-                    )
-                )
-        )
     }
 }
 

@@ -38,6 +38,54 @@ val GreenOnTertiary = Color(0xFF003738)
 val GreenTertiaryContainer = Color(0xFF1E4E4E)
 val GreenOnTertiaryContainer = Color(0xFFBCEBEB)
 
+// Red Theme Colors
+val RedPrimary = Color(0xFFFFB4AB)
+val RedOnPrimary = Color(0xFF690005)
+val RedPrimaryContainer = Color(0xFFFF5449)
+val RedOnPrimaryContainer = Color(0xFF410002)
+
+val RedSecondary = Color(0xFFE7BDB8)
+val RedOnSecondary = Color(0xFF442926)
+val RedSecondaryContainer = Color(0xFF5D3F3C)
+val RedOnSecondaryContainer = Color(0xFFFFDAD6)
+
+val RedTertiary = Color(0xFFE0C38C)
+val RedOnTertiary = Color(0xFF3F2E04)
+val RedTertiaryContainer = Color(0xFF584419)
+val RedOnTertiaryContainer = Color(0xFFFDE0A6)
+
+// Yellow Theme Colors
+val YellowPrimary = Color(0xFFFDE293)
+val YellowOnPrimary = Color(0xFF423000)
+val YellowPrimaryContainer = Color(0xFFFFC000)
+val YellowOnPrimaryContainer = Color(0xFF281C00)
+
+val YellowSecondary = Color(0xFFD6C6A0)
+val YellowOnSecondary = Color(0xFF393015)
+val YellowSecondaryContainer = Color(0xFF51462A)
+val YellowOnSecondaryContainer = Color(0xFFF3E2B9)
+
+val YellowTertiary = Color(0xFFAECFA9)
+val YellowOnTertiary = Color(0xFF1B361A)
+val YellowTertiaryContainer = Color(0xFF314D2E)
+val YellowOnTertiaryContainer = Color(0xFFC9EBC4)
+
+// Blue Theme Colors
+val BluePrimary = Color(0xFFAEC6FF)
+val BlueOnPrimary = Color(0xFF002E69)
+val BluePrimaryContainer = Color(0xFF3A7BFF)
+val BlueOnPrimaryContainer = Color(0xFF001943)
+
+val BlueSecondary = Color(0xFFBFC6DC)
+val BlueOnSecondary = Color(0xFF293041)
+val BlueSecondaryContainer = Color(0xFF3F4759)
+val BlueOnSecondaryContainer = Color(0xFFDBE2F9)
+
+val BlueTertiary = Color(0xFFDEBCDF)
+val BlueOnTertiary = Color(0xFF402843)
+val BlueTertiaryContainer = Color(0xFF583E5B)
+val BlueOnTertiaryContainer = Color(0xFFFBD7FC)
+
 val Background = Color(0xFF131316)
 val OnBackground = Color(0xFFE4E1E6)
 

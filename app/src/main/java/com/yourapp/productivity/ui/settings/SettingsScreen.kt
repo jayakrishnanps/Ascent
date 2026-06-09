@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.AccountCircle
@@ -22,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 import com.yourapp.productivity.ui.auth.AuthViewModel
+import com.yourapp.productivity.ui.components.AscentTopAppBar
 
 @Composable
 fun SettingsScreen(
@@ -46,7 +45,11 @@ fun SettingsScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SettingsTopAppBar(onMenuClick = onMenuClick, photoUrl = authProfile?.photoUrl)
+            AscentTopAppBar(
+                title = "SETTINGS",
+                photoUrl = authProfile?.photoUrl,
+                onMenuClick = onMenuClick
+            )
         }
     ) { padding ->
         Column(
@@ -95,6 +98,9 @@ fun SettingsScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         ThemeColorOption(Color(0xFFAA73FF), isSelected = uiState.selectedThemeColor == "DARK", onClick = { viewModel.setTheme("DARK") }) // Violet
                         ThemeColorOption(Color(0xFF32D978), isSelected = uiState.selectedThemeColor == "GREEN", onClick = { viewModel.setTheme("GREEN") }) // Green
+                        ThemeColorOption(Color(0xFFFF5449), isSelected = uiState.selectedThemeColor == "RED", onClick = { viewModel.setTheme("RED") }) // Red
+                        ThemeColorOption(Color(0xFFFFC000), isSelected = uiState.selectedThemeColor == "YELLOW", onClick = { viewModel.setTheme("YELLOW") }) // Yellow
+                        ThemeColorOption(Color(0xFF3A7BFF), isSelected = uiState.selectedThemeColor == "BLUE", onClick = { viewModel.setTheme("BLUE") }) // Blue
                     }
                 }
             }
@@ -201,56 +207,4 @@ fun ThemeColorOption(color: Color, isSelected: Boolean, onClick: () -> Unit) {
             )
             .clickable(onClick = onClick)
     )
-}
-
-@Composable
-fun SettingsTopAppBar(onMenuClick: () -> Unit, photoUrl: String? = null) {
-    Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .statusBarsPadding(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
-                        .clickable(onClick = onMenuClick)
-                ) {
-                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "SETTINGS",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            
-            IconButton(
-                onClick = { /* Quick Action */ },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Transparent, CircleShape)
-            ) {
-                Icon(Icons.Default.FlashOn, contentDescription = "Quick Action", tint = MaterialTheme.colorScheme.primary)
-            }
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(Color.Transparent, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), Color.Transparent)
-                    )
-                )
-        )
-    }
 }

@@ -210,7 +210,7 @@ fun AscentApp(
                                     e.printStackTrace()
                                 }
                                 navController.navigate("auth") {
-                                    popUpTo(navController.graph.id) { inclusive = true }
+                                    popUpTo(0) { inclusive = true }
                                 }
                             }
                         },
@@ -236,7 +236,7 @@ fun AscentApp(
                                     e.printStackTrace()
                                 }
                                 navController.navigate("auth") {
-                                    popUpTo(navController.graph.id) { inclusive = true }
+                                    popUpTo(0) { inclusive = true }
                                 }
                             }
                         }
@@ -244,7 +244,7 @@ fun AscentApp(
                 }
                 composable("achievements") {
                     AchievementsScreen(
-                        onBackClick = { navController.popBackStack() },
+                        onMenuClick = { scope.launch { drawerState.open() } },
                         onAddAchievementClick = { navController.navigate("add_edit_achievement") }
                     )
                 }

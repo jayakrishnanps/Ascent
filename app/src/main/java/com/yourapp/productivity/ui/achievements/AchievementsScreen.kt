@@ -24,30 +24,28 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yourapp.productivity.data.local.database.entities.Achievement
 import com.yourapp.productivity.data.local.database.entities.AchievementConditionType
+import com.yourapp.productivity.ui.components.AscentTopAppBar
+import com.yourapp.productivity.ui.auth.AuthViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AchievementsScreen(
-    onBackClick: () -> Unit,
+    onMenuClick: () -> Unit,
     onAddAchievementClick: () -> Unit,
-    viewModel: AchievementsViewModel = hiltViewModel()
+    viewModel: AchievementsViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val authProfile by authViewModel.userProfile.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Achievements") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+            AscentTopAppBar(
+                title = "ACHIEVEMENTS",
+                photoUrl = authProfile?.photoUrl,
+                onMenuClick = onMenuClick
             )
         },
         floatingActionButton = {
