@@ -15,7 +15,7 @@ class EvaluateAchievementsUseCase @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) {
     suspend operator fun invoke() {
-        val userId = firebaseAuth.currentUser?.uid ?: "mock_user_123"
+        val userId = firebaseAuth.currentUser?.uid ?: return
         
         val userProgress = userRepository.getUserProgress(userId).firstOrNull() ?: return
         val totalCompletions = completionHistoryRepository.getTotalCompletionsCount()

@@ -7,7 +7,11 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -25,7 +29,9 @@ import com.yourapp.productivity.ui.tasks.TaskListScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun AscentApp() {
+fun AscentApp(
+    profileViewModel: com.yourapp.productivity.ui.profile.ProfileViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -34,6 +40,7 @@ fun AscentApp() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val showBars = currentRoute in listOf("tasks", "profile", "statistics", "settings")
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -104,9 +111,63 @@ fun AscentApp() {
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+                Spacer(Modifier.weight(1f))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+                    label = { Text("Delete Account", color = MaterialTheme.colorScheme.error) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        showDeleteAccountDialog = true
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
             }
         }
     ) {
+        if (showDeleteAccountDialog) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            AlertDialog(
+                onDismissRequest = { showDeleteAccountDialog = false },
+                title = { Text("Delete Account") },
+                text = { Text("Are you sure you want to permanently delete your account? This will erase all your tasks, progress, and authentication data. This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            profileViewModel.deleteAccount(
+                                onSuccess = {
+                                    showDeleteAccountDialog = false
+                                    scope.launch {
+                                        try {
+                                            androidx.credentials.CredentialManager.create(context)
+                                                .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
+                                        navController.navigate("auth") {
+                                            popUpTo(0)
+                                        }
+                                    }
+                                },
+                                onError = { e ->
+                                    showDeleteAccountDialog = false
+                                    // Could show a snackbar here
+                                    e.printStackTrace()
+                                }
+                            )
+                        }
+                    ) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteAccountDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+        
         Scaffold(
             bottomBar = {
                 if (showBars) {
@@ -182,12 +243,9 @@ fun AscentApp() {
                     )
                 }
                 composable("profile") {
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     ProfileScreen(
                         onSignOut = {
-                            // --- GOOGLE SIGN-IN DISABLED ---
-                            // Firebase sign-out and CredentialManager clearing are bypassed.
-                            // We just pop back to tasks or show a mock action.
-                            /*
                             scope.launch {
                                 com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
                                 try {
@@ -198,10 +256,6 @@ fun AscentApp() {
                                 navController.navigate("auth") {
                                     popUpTo(0)
                                 }
-                            }
-                            */
-                            navController.navigate("tasks") {
-                                popUpTo(0)
                             }
                         },
                         onMenuClick = { scope.launch { drawerState.open() } }

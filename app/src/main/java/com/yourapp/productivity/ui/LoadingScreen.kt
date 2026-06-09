@@ -24,12 +24,8 @@ import com.google.firebase.auth.FirebaseAuth
 fun LoadingScreen(onLoadingComplete: (isAuthenticated: Boolean) -> Unit) {
     LaunchedEffect(Unit) {
         delay(500)
-        // --- GOOGLE SIGN-IN DISABLED ---
-        // val user = FirebaseAuth.getInstance().currentUser
-        // onLoadingComplete(user != null)
-        
-        // Always pass true to bypass auth
-        onLoadingComplete(true)
+        val user = FirebaseAuth.getInstance().currentUser
+        onLoadingComplete(user != null)
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")

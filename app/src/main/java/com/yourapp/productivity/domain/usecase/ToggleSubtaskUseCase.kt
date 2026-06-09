@@ -28,10 +28,11 @@ class ToggleSubtaskUseCase @Inject constructor(
 
         val xpEarned = (task.difficulty.xpAward * 0.1).toInt()
 
-        val userId = firebaseAuth.currentUser?.uid ?: "mock_user_123"
-        val userProgress = userRepository.getUserProgress(userId).firstOrNull()
-        if (userProgress != null) {
-            val xpDelta = if (isNowCompleted) xpEarned else -xpEarned
+        val userId = firebaseAuth.currentUser?.uid
+        if (userId != null) {
+            val userProgress = userRepository.getUserProgress(userId).firstOrNull()
+            if (userProgress != null) {
+                val xpDelta = if (isNowCompleted) xpEarned else -xpEarned
             val newTotalXp = (userProgress.totalXp + xpDelta).coerceAtLeast(0)
                 
                 val newLevel = calculateLevel(newTotalXp)
@@ -42,6 +43,7 @@ class ToggleSubtaskUseCase @Inject constructor(
                 )
                 userRepository.updateUserProgress(updatedProgress)
             }
+        }
         
         if (isNowCompleted) {
             val history = CompletionHistory(

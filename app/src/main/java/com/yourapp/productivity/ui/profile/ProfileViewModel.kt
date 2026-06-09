@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.yourapp.productivity.data.local.database.AppDatabase
 import javax.inject.Inject
 
 data class ProfileUiState(
@@ -44,7 +47,8 @@ class ProfileViewModel @Inject constructor(
     private val completionHistoryRepository: CompletionHistoryRepository,
     private val achievementRepository: AchievementRepository,
     private val preferencesDataStore: PreferencesDataStore,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val appDatabase: AppDatabase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -56,7 +60,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun loadProfileData() {
-        val userId = firebaseAuth.currentUser?.uid ?: "mock_user_123"
+        val userId = firebaseAuth.currentUser?.uid ?: return
         
         viewModelScope.launch {
             userRepository.getUserProgress(userId).collect { progress ->
@@ -109,5 +113,31 @@ class ProfileViewModel @Inject constructor(
     
     fun signOut() {
         firebaseAuth.signOut()
+    }
+    
+    fun deleteAccount(onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            user.delete().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        try {
+                            appDatabase.clearAllTables()
+                            withContext(Dispatchers.Main) {
+                                onSuccess()
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                onError(e)
+                            }
+                        }
+                    }
+                } else {
+                    onError(task.exception ?: Exception("Failed to delete user account"))
+                }
+            }
+        } else {
+            onError(Exception("No authenticated user found"))
+        }
     }
 }
