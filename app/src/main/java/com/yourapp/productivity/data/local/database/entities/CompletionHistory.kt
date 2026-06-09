@@ -10,5 +10,6 @@ data class CompletionHistory(
     val id: String = UUID.randomUUID().toString(),
     val taskId: String,
     val completedAt: Long,
-    val xpEarned: Int
+    val xpEarned: Int,
+    val isMissed: Boolean = false
 )

@@ -30,7 +30,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AscentApp(
-    profileViewModel: com.yourapp.productivity.ui.profile.ProfileViewModel = hiltViewModel()
+    profileViewModel: com.yourapp.productivity.ui.profile.ProfileViewModel = hiltViewModel(),
+    authViewModel: com.yourapp.productivity.ui.auth.AuthViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

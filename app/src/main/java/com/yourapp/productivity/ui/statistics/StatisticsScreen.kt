@@ -101,7 +101,8 @@ fun StatisticsScreen(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatItemCard("Best Streak", "${uiState.bestStreak}", "days", Modifier.weight(1f))
-                StatItemCard("XP This Week", "+${uiState.xpGainedThisWeek}", "XP", Modifier.weight(1f))
+                val xpSign = if (uiState.xpGainedThisWeek > 0) "+" else ""
+                StatItemCard("XP This Week", "$xpSign${uiState.xpGainedThisWeek}", "XP", Modifier.weight(1f))
             }
         }
     }

@@ -34,6 +34,7 @@ class TaskListViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val completeTaskUseCase: CompleteTaskUseCase,
     private val toggleSubtaskUseCase: ToggleSubtaskUseCase,
+    private val evaluateMissedTasksUseCase: com.yourapp.productivity.domain.usecase.EvaluateMissedTasksUseCase,
     private val userRepository: UserRepository,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
@@ -42,8 +43,11 @@ class TaskListViewModel @Inject constructor(
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
     init {
-        loadTasks()
-        loadUserProgress()
+        viewModelScope.launch {
+            evaluateMissedTasksUseCase()
+            loadTasks()
+            loadUserProgress()
+        }
     }
 
     private fun loadUserProgress() {
