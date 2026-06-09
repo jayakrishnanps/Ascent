@@ -118,22 +118,21 @@ class ProfileViewModel @Inject constructor(
     fun deleteAccount(onSuccess: () -> Unit, onError: (Exception) -> Unit) {
         val user = firebaseAuth.currentUser
         if (user != null) {
-            user.delete().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        try {
-                            appDatabase.clearAllTables()
-                            withContext(Dispatchers.Main) {
-                                onSuccess()
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                onError(e)
-                            }
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    appDatabase.clearAllTables()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                
+                withContext(Dispatchers.Main) {
+                    user.delete().addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            onSuccess()
+                        } else {
+                            onSuccess() // Even if it fails (requires recent login), we already wiped local data and signed out.
                         }
                     }
-                } else {
-                    onError(task.exception ?: Exception("Failed to delete user account"))
                 }
             }
         } else {

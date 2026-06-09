@@ -20,7 +20,6 @@ data class AddEditTaskUiState(
     val title: String = "",
     val description: String = "",
     val startDate: Long? = null,
-    val dueDate: Long? = null,
     val difficulty: Difficulty = Difficulty.LOW,
     val recurrenceType: RecurrenceType = RecurrenceType.NONE,
     val weeklyDays: Set<Int> = emptySet(),
@@ -58,7 +57,6 @@ class AddEditTaskViewModel @Inject constructor(
                         title = task.title,
                         description = task.description ?: "",
                         startDate = task.startDate,
-                        dueDate = task.dueDate,
                         difficulty = task.difficulty,
                         recurrenceType = task.recurrenceType,
                         weeklyDays = task.weeklyDays?.split(",")?.mapNotNull { it.toIntOrNull() }?.toSet() ?: emptySet(),
@@ -84,10 +82,6 @@ class AddEditTaskViewModel @Inject constructor(
 
     fun updateStartDate(startDate: Long?) {
         _uiState.value = _uiState.value.copy(startDate = startDate)
-    }
-
-    fun updateDueDate(dueDate: Long?) {
-        _uiState.value = _uiState.value.copy(dueDate = dueDate)
     }
 
     fun updateRecurrenceType(type: RecurrenceType) {
@@ -143,11 +137,11 @@ class AddEditTaskViewModel @Inject constructor(
             currentState.weeklyDays.joinToString(",")
         } else null
 
-        var initialDueDate = currentState.dueDate
-        if (currentState.recurrenceType == RecurrenceType.WEEKLY && currentState.weeklyDays.isNotEmpty() && initialDueDate != null) {
-            // Check if initialDueDate is on a selected day
+        var initialStartDate = currentState.startDate
+        if (currentState.recurrenceType == RecurrenceType.WEEKLY && currentState.weeklyDays.isNotEmpty() && initialStartDate != null) {
+            // Check if initialStartDate is on a selected day
             val cal = java.util.Calendar.getInstance()
-            cal.timeInMillis = initialDueDate
+            cal.timeInMillis = initialStartDate
             val currentDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK) - 1 // 0-indexed (Sunday = 0)
             
             if (!currentState.weeklyDays.contains(currentDayOfWeek)) {
@@ -156,7 +150,7 @@ class AddEditTaskViewModel @Inject constructor(
                     val nextDay = (currentDayOfWeek + i) % 7
                     if (currentState.weeklyDays.contains(nextDay)) {
                         cal.add(java.util.Calendar.DAY_OF_YEAR, i)
-                        initialDueDate = cal.timeInMillis
+                        initialStartDate = cal.timeInMillis
                         break
                     }
                 }
@@ -167,8 +161,7 @@ class AddEditTaskViewModel @Inject constructor(
             id = generatedTaskId,
             title = currentState.title,
             description = currentState.description.ifBlank { null },
-            startDate = currentState.startDate,
-            dueDate = initialDueDate,
+            startDate = initialStartDate,
             difficulty = currentState.difficulty,
             isCompleted = false,
             completedAt = null,

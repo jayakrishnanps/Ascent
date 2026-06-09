@@ -33,6 +33,8 @@ fun AddEditTaskScreen(
     }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showStartDatePicker by remember { mutableStateOf(false) }
+    var showEndDatePicker by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -191,26 +193,57 @@ fun AddEditTaskScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text("Start Date: ${formatDate(uiState.startDate)}", style = MaterialTheme.typography.bodyLarge)
-            Button(onClick = { viewModel.updateStartDate(System.currentTimeMillis()) }) {
-                Text("Set Start Date to Today")
+            Button(onClick = { showStartDatePicker = true }) {
+                Text("Select Start Date")
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text("Due Date: ${formatDate(uiState.dueDate)}", style = MaterialTheme.typography.bodyLarge)
-            Button(onClick = { viewModel.updateDueDate(System.currentTimeMillis()) }) {
-                Text("Set Due Date to Today")
+            if (showStartDatePicker) {
+                val datePickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.startDate ?: System.currentTimeMillis())
+                DatePickerDialog(
+                    onDismissRequest = { showStartDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            viewModel.updateStartDate(datePickerState.selectedDateMillis)
+                            showStartDatePicker = false
+                        }) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showStartDatePicker = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
             }
 
             if (uiState.recurrenceType != RecurrenceType.NONE) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("End Date: ${formatDate(uiState.recurrenceEndDate)}", style = MaterialTheme.typography.bodyLarge)
-                Button(onClick = { 
-                    val cal = Calendar.getInstance()
-                    cal.add(Calendar.MONTH, 1)
-                    viewModel.updateRecurrenceEndDate(cal.timeInMillis) 
-                }) {
-                    Text("Set End Date (1 Month from now)")
+                Button(onClick = { showEndDatePicker = true }) {
+                    Text("Select End Date")
+                }
+                if (showEndDatePicker) {
+                    val endDatePickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.recurrenceEndDate ?: System.currentTimeMillis())
+                    DatePickerDialog(
+                        onDismissRequest = { showEndDatePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.updateRecurrenceEndDate(endDatePickerState.selectedDateMillis)
+                                showEndDatePicker = false
+                            }) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showEndDatePicker = false }) {
+                                Text("Cancel")
+                            }
+                        }
+                    ) {
+                        DatePicker(state = endDatePickerState)
+                    }
                 }
             }
             

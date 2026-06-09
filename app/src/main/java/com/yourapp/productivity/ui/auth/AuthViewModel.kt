@@ -84,4 +84,10 @@ class AuthViewModel @Inject constructor(
     fun setError(message: String) {
         _uiState.value = _uiState.value.copy(error = message)
     }
+
+    fun signOut() {
+        firebaseAuth.signOut()
+        _userProfile.value = null
+        _uiState.value = _uiState.value.copy(isAuthenticated = false, error = null)
+    }
 }

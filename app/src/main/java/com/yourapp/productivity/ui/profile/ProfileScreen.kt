@@ -54,7 +54,6 @@ fun ProfileScreen(
     
     val xpInCurrentLevel = currentXp - levelBaseXp
     val progressFraction = if (currentLevel >= 100) 1f else (xpInCurrentLevel.toFloat() / nextLevelDelta.toFloat()).coerceIn(0f, 1f)
-    val nextLevelXp = levelBaseXp + nextLevelDelta
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -82,6 +81,23 @@ fun ProfileScreen(
                     }
                 }
 
+                val userPhotoUrl = authProfile?.photoUrl ?: progress?.photoUrl
+                if (userPhotoUrl != null) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AsyncImage(
+                            model = userPhotoUrl,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .border(3.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                        )
+                    }
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -96,7 +112,7 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        val nextLevelXp = currentLevel * 100
+                        val requiredXpForNextLevel = currentLevel * 100
                         
                         LinearProgressIndicator(
                             progress = { progressFraction },
@@ -109,7 +125,7 @@ fun ProfileScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "$currentXp XP / $nextLevelXp XP to next level",
+                            text = "$currentXp XP / ${levelBaseXp + requiredXpForNextLevel} XP to next level",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -201,7 +217,7 @@ fun ProfileTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float, pho
             
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.Center).padding(start = 24.dp)
+                modifier = Modifier.align(Alignment.CenterEnd)
             ) {
                 Text(
                     text = "ASCENT",

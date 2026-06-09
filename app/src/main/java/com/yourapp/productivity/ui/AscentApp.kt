@@ -138,6 +138,7 @@ fun AscentApp(
                                 onSuccess = {
                                     showDeleteAccountDialog = false
                                     scope.launch {
+                                        authViewModel.signOut()
                                         try {
                                             androidx.credentials.CredentialManager.create(context)
                                                 .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
@@ -145,7 +146,7 @@ fun AscentApp(
                                             e.printStackTrace()
                                         }
                                         navController.navigate("auth") {
-                                            popUpTo(0)
+                                            popUpTo(navController.graph.id) { inclusive = true }
                                         }
                                     }
                                 },
@@ -247,14 +248,15 @@ fun AscentApp(
                     ProfileScreen(
                         onSignOut = {
                             scope.launch {
-                                com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                                authViewModel.signOut()
                                 try {
-                                    androidx.credentials.CredentialManager.create(context).clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
+                                    androidx.credentials.CredentialManager.create(context)
+                                        .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                 }
                                 navController.navigate("auth") {
-                                    popUpTo(0)
+                                    popUpTo(navController.graph.id) { inclusive = true }
                                 }
                             }
                         },

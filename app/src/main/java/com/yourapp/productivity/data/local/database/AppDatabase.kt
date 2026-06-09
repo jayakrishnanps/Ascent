@@ -23,7 +23,7 @@ import com.yourapp.productivity.data.local.database.entities.UserProgress
         Achievement::class,
         UserAchievement::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

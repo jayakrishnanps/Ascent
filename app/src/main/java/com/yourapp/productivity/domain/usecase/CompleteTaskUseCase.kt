@@ -109,16 +109,16 @@ class CompleteTaskUseCase @Inject constructor(
     }
 
     private suspend fun generateNextRecurrence(task: Task) {
-        val nextDueDate = when (task.recurrenceType) {
+        val nextStartDate = when (task.recurrenceType) {
             RecurrenceType.DAILY -> {
                 val cal = Calendar.getInstance()
-                task.dueDate?.let { cal.timeInMillis = it }
+                task.startDate?.let { cal.timeInMillis = it }
                 cal.add(Calendar.DAY_OF_YEAR, 1)
                 cal.timeInMillis
             }
             RecurrenceType.WEEKLY -> {
                 val cal = Calendar.getInstance()
-                task.dueDate?.let { cal.timeInMillis = it }
+                task.startDate?.let { cal.timeInMillis = it }
                 
                 val weeklyDaysStr = task.weeklyDays
                 val weeklyDays = weeklyDaysStr?.split(",")?.mapNotNull { it.toIntOrNull() }?.toSet() ?: emptySet()
@@ -142,13 +142,13 @@ class CompleteTaskUseCase @Inject constructor(
             RecurrenceType.NONE -> null
         }
 
-        if (nextDueDate != null) {
-            if (task.recurrenceEndDate == null || nextDueDate <= task.recurrenceEndDate) {
+        if (nextStartDate != null) {
+            if (task.recurrenceEndDate == null || nextStartDate <= task.recurrenceEndDate) {
                 val newTask = task.copy(
                     id = UUID.randomUUID().toString(),
                     isCompleted = false,
                     completedAt = null,
-                    dueDate = nextDueDate
+                    startDate = nextStartDate
                 )
                 taskRepository.insertTask(newTask)
             }

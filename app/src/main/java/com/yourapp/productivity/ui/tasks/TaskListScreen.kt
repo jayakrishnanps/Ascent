@@ -28,6 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -194,7 +197,7 @@ fun AscentTopAppBar(onMenuClick: () -> Unit, level: Int, xpProgress: Float, phot
             
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.Center).padding(start = 24.dp)
+                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 48.dp)
             ) {
                 Text(
                     text = "ASCENT",
@@ -302,7 +305,8 @@ fun TaskItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .animateContentSize(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isFuture) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
@@ -375,7 +379,7 @@ fun TaskItem(
                     )
                 }
 
-                if (expanded) {
+                AnimatedVisibility(visible = expanded) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         subtasks.forEach { subtask ->
                             Row(
@@ -403,6 +407,8 @@ fun TaskItem(
                     }
                 }
             }
+            
+            val context = LocalContext.current
 
             Row(
                 modifier = Modifier
@@ -412,8 +418,13 @@ fun TaskItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = onCompleteClick,
-                    enabled = allSubtasksCompleted,
+                    onClick = {
+                        if (allSubtasksCompleted) {
+                            onCompleteClick()
+                        } else {
+                            android.widget.Toast.makeText(context, "Complete all subtasks first.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     modifier = Modifier
                         .size(32.dp)
                         .border(1.dp, if (allSubtasksCompleted) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), CircleShape)

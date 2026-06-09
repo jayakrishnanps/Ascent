@@ -11,14 +11,13 @@ import com.yourapp.productivity.domain.usecase.CompleteTaskUseCase
 import com.yourapp.productivity.domain.usecase.ToggleSubtaskUseCase
 import com.yourapp.productivity.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.yourapp.productivity.domain.usecase.calculateLevel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.math.pow
 import javax.inject.Inject
 
 data class TaskListUiState(
@@ -52,8 +51,8 @@ class TaskListViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.getUserProgress(userId).collect { progress ->
                 if (progress != null) {
-                    val currentLevelXp = if (progress.currentLevel == 1) 0 else ((progress.currentLevel - 1) * 100 * Math.pow(1.5, (progress.currentLevel - 2).toDouble())).toInt()
-                    val nextLevelXp = (progress.currentLevel * 100 * Math.pow(1.5, (progress.currentLevel - 1).toDouble())).toInt()
+                    val currentLevelXp = if (progress.currentLevel == 1) 0 else ((progress.currentLevel - 1) * 100 * 1.5.pow((progress.currentLevel - 2).toDouble())).toInt()
+                    val nextLevelXp = (progress.currentLevel * 100 * 1.5.pow((progress.currentLevel - 1).toDouble())).toInt()
                     
                     val xpIntoLevel = progress.totalXp - currentLevelXp
                     val xpRequiredForNextLevel = nextLevelXp - currentLevelXp
