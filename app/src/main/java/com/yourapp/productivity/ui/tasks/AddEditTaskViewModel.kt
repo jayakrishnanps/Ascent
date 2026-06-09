@@ -81,7 +81,11 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     fun updateStartDate(startDate: Long?) {
-        _uiState.value = _uiState.value.copy(startDate = startDate)
+        val adjusted = startDate?.let {
+            val tz = java.util.TimeZone.getDefault()
+            it - tz.getOffset(it)
+        }
+        _uiState.value = _uiState.value.copy(startDate = adjusted)
     }
 
     fun updateRecurrenceType(type: RecurrenceType) {
@@ -99,7 +103,11 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     fun updateRecurrenceEndDate(endDate: Long?) {
-        _uiState.value = _uiState.value.copy(recurrenceEndDate = endDate)
+        val adjusted = endDate?.let {
+            val tz = java.util.TimeZone.getDefault()
+            it - tz.getOffset(it)
+        }
+        _uiState.value = _uiState.value.copy(recurrenceEndDate = adjusted)
     }
 
     fun updateNewSubtaskTitle(title: String) {

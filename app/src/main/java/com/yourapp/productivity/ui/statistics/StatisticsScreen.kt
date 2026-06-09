@@ -24,18 +24,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.yourapp.productivity.ui.auth.AuthViewModel
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun StatisticsScreen(
     onMenuClick: () -> Unit,
-    viewModel: StatisticsViewModel = hiltViewModel()
+    viewModel: StatisticsViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val authProfile by authViewModel.userProfile.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            StatisticsTopAppBar(onMenuClick = onMenuClick)
+            StatisticsTopAppBar(
+                photoUrl = authProfile?.photoUrl,
+                onMenuClick = onMenuClick
+            )
         }
     ) { padding ->
         Column(
@@ -109,7 +117,10 @@ fun StatisticsScreen(
 }
 
 @Composable
-fun StatisticsTopAppBar(onMenuClick: () -> Unit) {
+fun StatisticsTopAppBar(
+    photoUrl: String?,
+    onMenuClick: () -> Unit
+) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
         Row(
             modifier = Modifier
@@ -128,7 +139,16 @@ fun StatisticsTopAppBar(onMenuClick: () -> Unit) {
                         .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
                         .clickable(onClick = onMenuClick)
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (photoUrl != null) {
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                        )
+                    } else {
+                        Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.align(Alignment.Center), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(

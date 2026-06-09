@@ -81,7 +81,7 @@ class CompleteTaskUseCase @Inject constructor(
             generateNextRecurrence(task)
         }
 
-        evaluateAchievementsUseCase()
+        evaluateAchievementsUseCase(task)
     }
 
     private fun calculateLevel(totalXp: Int): Int {

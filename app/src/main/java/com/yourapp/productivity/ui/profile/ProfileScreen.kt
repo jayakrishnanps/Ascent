@@ -5,9 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.yourapp.productivity.data.local.database.entities.Achievement
 
 import coil.compose.AsyncImage
 import com.yourapp.productivity.ui.auth.AuthViewModel
@@ -141,28 +138,7 @@ fun ProfileScreen(
                     StatCard("This Week", "${uiState.tasksCompletedThisWeek}", "tasks", Modifier.weight(1f))
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Achievements", 
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(uiState.allAchievements, key = { it.id }) { achievement ->
-                        val isEarned = uiState.earnedAchievementIds.contains(achievement.id)
-                        AchievementCard(achievement, isEarned)
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(80.dp))
-                    }
-                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -278,40 +254,5 @@ fun StatCard(title: String, value: String, subtitle: String, modifier: Modifier 
     }
 }
 
-@Composable
-fun AchievementCard(achievement: Achievement, isEarned: Boolean) {
-    val opacity = if (isEarned) 1f else 0.4f
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = if (isEarned) 0.5f else 0.2f)),
-        border = BorderStroke(1.dp, if (isEarned) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = achievement.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = opacity)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = achievement.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = opacity),
-                maxLines = 2,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            if (!isEarned) {
-                Text("Locked", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f))
-            } else {
-                Text("Unlocked", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-            }
-        }
-    }
 }
 

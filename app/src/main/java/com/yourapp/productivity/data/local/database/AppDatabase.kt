@@ -11,7 +11,7 @@ import com.yourapp.productivity.data.local.database.entities.Achievement
 import com.yourapp.productivity.data.local.database.entities.CompletionHistory
 import com.yourapp.productivity.data.local.database.entities.Subtask
 import com.yourapp.productivity.data.local.database.entities.Task
-import com.yourapp.productivity.data.local.database.entities.UserAchievement
+
 import com.yourapp.productivity.data.local.database.entities.UserProgress
 
 @Database(
@@ -20,10 +20,9 @@ import com.yourapp.productivity.data.local.database.entities.UserProgress
         Subtask::class,
         CompletionHistory::class,
         UserProgress::class,
-        Achievement::class,
-        UserAchievement::class
+        Achievement::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -44,7 +44,11 @@ class TaskListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            evaluateMissedTasksUseCase()
+            try {
+                evaluateMissedTasksUseCase()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             loadTasks()
             loadUserProgress()
         }

@@ -26,6 +26,8 @@ import com.yourapp.productivity.ui.settings.SettingsScreen
 import com.yourapp.productivity.ui.statistics.StatisticsScreen
 import com.yourapp.productivity.ui.tasks.AddEditTaskScreen
 import com.yourapp.productivity.ui.tasks.TaskListScreen
+import com.yourapp.productivity.ui.achievements.AchievementsScreen
+import com.yourapp.productivity.ui.achievements.AddEditAchievementScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -105,6 +107,20 @@ fun AscentApp(
                     onClick = {
                         scope.launch { drawerState.close() }
                         navController.navigate("statistics") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.EmojiEvents, contentDescription = null) },
+                    label = { Text("Achievements") },
+                    selected = currentRoute == "achievements",
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("achievements") {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
@@ -272,6 +288,18 @@ fun AscentApp(
                 composable("settings") {
                     SettingsScreen(
                         onMenuClick = { scope.launch { drawerState.open() } }
+                    )
+                }
+                composable("achievements") {
+                    AchievementsScreen(
+                        onBackClick = { navController.popBackStack() },
+                        onAddAchievementClick = { navController.navigate("add_edit_achievement") }
+                    )
+                }
+                composable("add_edit_achievement") {
+                    AddEditAchievementScreen(
+                        onBackClick = { navController.popBackStack() },
+                        onSaveSuccess = { navController.popBackStack() }
                     )
                 }
             }

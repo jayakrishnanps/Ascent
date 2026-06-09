@@ -28,15 +28,8 @@ data class ProfileUiState(
         longestStreak = 12,
         lastCompletionDate = System.currentTimeMillis()
     ),
-    val totalTasksCompleted: Int = 42,
-    val tasksCompletedThisWeek: Int = 12,
-    val allAchievements: List<Achievement> = listOf(
-        Achievement("1", "Early Bird", "Complete 5 tasks before 8 AM", "early_bird", 5, 0),
-        Achievement("2", "Productivity Ninja", "Complete 10 tasks in a day", "daily_tasks", 10, 0),
-        Achievement("3", "Streak Master", "Maintain a 7-day streak", "streak", 7, 0),
-        Achievement("4", "Task Master", "Complete 50 tasks total", "total_tasks", 50, 0)
-    ),
-    val earnedAchievementIds: Set<String> = setOf("1", "2"),
+    val totalTasksCompleted: Int = 0,
+    val tasksCompletedThisWeek: Int = 0,
     val themeMode: String = "SYSTEM",
     val isLoading: Boolean = false
 )
@@ -45,7 +38,6 @@ data class ProfileUiState(
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val completionHistoryRepository: CompletionHistoryRepository,
-    private val achievementRepository: AchievementRepository,
     private val preferencesDataStore: PreferencesDataStore,
     private val firebaseAuth: FirebaseAuth,
     private val appDatabase: AppDatabase
@@ -79,21 +71,6 @@ class ProfileViewModel @Inject constructor(
                 totalTasksCompleted = total,
                 tasksCompletedThisWeek = thisWeek
             )
-        }
-
-        viewModelScope.launch {
-            achievementRepository.getAllAchievements().collect { achievements ->
-                _uiState.value = _uiState.value.copy(allAchievements = achievements)
-            }
-        }
-
-        viewModelScope.launch {
-            achievementRepository.getUserAchievements(userId).collect { earned ->
-                _uiState.value = _uiState.value.copy(
-                    earnedAchievementIds = earned.map { it.achievementId }.toSet(),
-                    isLoading = false
-                )
-            }
         }
     }
 

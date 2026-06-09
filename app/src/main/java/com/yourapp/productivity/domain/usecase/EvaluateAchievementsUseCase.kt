@@ -1,53 +1,48 @@
 package com.yourapp.productivity.domain.usecase
 
-import com.google.firebase.auth.FirebaseAuth
-import com.yourapp.productivity.data.local.database.entities.UserAchievement
+import com.yourapp.productivity.data.local.database.entities.AchievementConditionType
+import com.yourapp.productivity.data.local.database.entities.Task
 import com.yourapp.productivity.domain.repository.AchievementRepository
-import com.yourapp.productivity.domain.repository.CompletionHistoryRepository
-import com.yourapp.productivity.domain.repository.UserRepository
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
 class EvaluateAchievementsUseCase @Inject constructor(
-    private val userRepository: UserRepository,
-    private val completionHistoryRepository: CompletionHistoryRepository,
-    private val achievementRepository: AchievementRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val achievementRepository: AchievementRepository
 ) {
-    suspend operator fun invoke() {
-        val userId = firebaseAuth.currentUser?.uid ?: return
-        
-        val userProgress = userRepository.getUserProgress(userId).firstOrNull() ?: return
-        val totalCompletions = completionHistoryRepository.getTotalCompletionsCount()
-        
-        val allAchievements = achievementRepository.getAllAchievements().firstOrNull() ?: emptyList()
-        val earnedAchievements = achievementRepository.getUserAchievements(userId).firstOrNull()?.map { it.achievementId } ?: emptyList()
+    suspend operator fun invoke(task: Task) {
+        val achievements = achievementRepository.getAchievementsForTask(task.id).firstOrNull() ?: emptyList()
 
-        for (achievement in allAchievements) {
-            if (earnedAchievements.contains(achievement.id)) continue
+        for (achievement in achievements) {
+            if (achievement.isEarned) continue
 
-            var conditionMet = false
+            var newProgress = achievement.currentProgress
+            var isEarned = false
+            
             when (achievement.conditionType) {
-                "TASK_COUNT" -> {
-                    if (totalCompletions >= achievement.conditionValue) conditionMet = true
+                AchievementConditionType.COMPLETE_N_TIMES -> {
+                    newProgress += 1
+                    if (newProgress >= achievement.targetValue) {
+                        isEarned = true
+                        newProgress = achievement.targetValue
+                    }
                 }
-                "LEVEL" -> {
-                    if (userProgress.currentLevel >= achievement.conditionValue) conditionMet = true
-                }
-                "STREAK" -> {
-                    if (userProgress.currentStreak >= achievement.conditionValue) conditionMet = true
-                }
-                "HARD_TASKS" -> {
+                AchievementConditionType.COMPLETE_UNTIL_END_DATE -> {
+                    // For COMPLETE_UNTIL_END_DATE, we assume targetValue = 1.
+                    // If the task has a recurrenceEndDate and we've reached or passed it
+                    if (task.recurrenceEndDate != null && System.currentTimeMillis() >= task.recurrenceEndDate) {
+                        isEarned = true
+                        newProgress = 1
+                    }
                 }
             }
 
-            if (conditionMet) {
-                val newEarned = UserAchievement(
-                    userId = userId,
-                    achievementId = achievement.id,
-                    earnedAt = System.currentTimeMillis()
+            if (newProgress != achievement.currentProgress || isEarned) {
+                val updatedAchievement = achievement.copy(
+                    currentProgress = newProgress,
+                    isEarned = isEarned,
+                    earnedAt = if (isEarned) System.currentTimeMillis() else null
                 )
-                achievementRepository.insertUserAchievement(newEarned)
+                achievementRepository.updateAchievement(updatedAchievement)
             }
         }
     }

@@ -192,7 +192,7 @@ fun AddEditTaskScreen(
             HorizontalDivider()
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text("Start Date: ${formatDate(uiState.startDate)}", style = MaterialTheme.typography.bodyLarge)
+            Text("Start Date: ${formatStartDate(uiState.startDate)}", style = MaterialTheme.typography.bodyLarge)
             Button(onClick = { showStartDatePicker = true }) {
                 Text("Select Start Date")
             }
@@ -220,9 +220,16 @@ fun AddEditTaskScreen(
 
             if (uiState.recurrenceType != RecurrenceType.NONE) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("End Date: ${formatDate(uiState.recurrenceEndDate)}", style = MaterialTheme.typography.bodyLarge)
-                Button(onClick = { showEndDatePicker = true }) {
-                    Text("Select End Date")
+                Text("End Date: ${formatEndDate(uiState.recurrenceEndDate)}", style = MaterialTheme.typography.bodyLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { showEndDatePicker = true }) {
+                        Text("Set End Date")
+                    }
+                    if (uiState.recurrenceEndDate != null) {
+                        OutlinedButton(onClick = { viewModel.updateRecurrenceEndDate(null) }) {
+                            Text("Clear Date")
+                        }
+                    }
                 }
                 if (showEndDatePicker) {
                     val endDatePickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.recurrenceEndDate ?: System.currentTimeMillis())
@@ -252,8 +259,14 @@ fun AddEditTaskScreen(
     }
 }
 
-private fun formatDate(millis: Long?): String {
+private fun formatStartDate(millis: Long?): String {
     if (millis == null) return "Not set"
+    val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
+}
+
+private fun formatEndDate(millis: Long?): String {
+    if (millis == null) return "Does not end"
     val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
 }
