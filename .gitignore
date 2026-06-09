@@ -26,3 +26,20 @@ captures/
 /marketing/yarn-error.log*
 /marketing/yarn-debug.log*
 /marketing/pnpm-debug.log*
+# Added by code-review-graph
+.code-review-graph/
+.mcp.json
+.opencode.json
+.claude/
+.qoder/
+.cursor/
+.cursorrules
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+QODER.md
+.kiro/
+.github/code-review-graph.instruction.md
+.gemini/
+.vscode/

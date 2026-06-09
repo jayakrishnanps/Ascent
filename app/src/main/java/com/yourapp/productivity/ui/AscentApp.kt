@@ -55,7 +55,7 @@ fun AscentApp() {
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.List, contentDescription = null) },
+                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
                     label = { Text("All Tasks") },
                     selected = currentRoute == "tasks",
                     onClick = {
@@ -181,7 +181,6 @@ fun AscentApp() {
                     )
                 }
                 composable("profile") {
-                    val context = androidx.compose.ui.platform.LocalContext.current
                     ProfileScreen(
                         onSignOut = {
                             // --- GOOGLE SIGN-IN DISABLED ---
