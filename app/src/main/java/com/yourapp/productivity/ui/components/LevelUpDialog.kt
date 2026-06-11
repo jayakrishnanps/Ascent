@@ -30,9 +30,9 @@ fun LevelUpDialog(
 
     LaunchedEffect(Unit) {
         visible = true
-        delay(3000) // Auto-dismiss after 3 seconds
+        delay(3000)
         visible = false
-        delay(300) // Wait for exit animation
+        delay(300)
         onDismiss()
     }
 

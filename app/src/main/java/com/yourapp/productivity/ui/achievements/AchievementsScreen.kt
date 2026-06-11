@@ -106,7 +106,6 @@ fun AchievementItem(achievement: Achievement, onDeleteClick: () -> Unit) {
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             if (isEarned) {
-                // Add a subtle shine effect for unlocked achievements
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -132,7 +131,6 @@ fun AchievementItem(achievement: Achievement, onDeleteClick: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f)
                     ) {
-                        // Badge Icon
                         Box(
                             modifier = Modifier
                                 .size(56.dp)

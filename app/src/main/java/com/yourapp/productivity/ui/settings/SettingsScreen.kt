@@ -61,7 +61,6 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // User Profile Section
             SettingsSection(title = "Account Information", icon = Icons.Default.AccountCircle) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -91,7 +90,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Theme Section
             SettingsSection(title = "Aesthetic Customization", icon = Icons.Default.Palette) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(text = "App Theme Color", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.outline)
@@ -105,7 +103,6 @@ fun SettingsScreen(
                 }
             }
 
-            // General Section
             SettingsSection(title = "General Settings", icon = Icons.Default.Notifications) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -124,7 +121,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Danger Zone Section
             SettingsSection(title = "Danger Zone", icon = Icons.Default.Delete, iconColor = MaterialTheme.colorScheme.error) {
                 Button(
                     onClick = { showDeleteAccountDialog = true },

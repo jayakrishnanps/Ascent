@@ -71,7 +71,6 @@ class StatisticsViewModel @Inject constructor(
                 // xp gained this week can be negative if penalties exceed gains, but let's just sum it
                 val xpGainedThisWeek = historyThisWeek.sumOf { it.xpEarned }
 
-                // Weekly activity
                 val activityCounts = MutableList(7) { 0 }
                 historyThisWeek.filter { !it.isMissed }.forEach { record ->
                     val recordCal = Calendar.getInstance().apply { timeInMillis = record.completedAt }

@@ -69,7 +69,7 @@ fun AddEditAchievementScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Task Selection Dropdown
+
             ExposedDropdownMenuBox(
                 expanded = taskDropdownExpanded,
                 onExpandedChange = { taskDropdownExpanded = it }
@@ -99,7 +99,7 @@ fun AddEditAchievementScreen(
                 }
             }
 
-            // Condition Type Dropdown
+
             ExposedDropdownMenuBox(
                 expanded = typeDropdownExpanded,
                 onExpandedChange = { typeDropdownExpanded = it }

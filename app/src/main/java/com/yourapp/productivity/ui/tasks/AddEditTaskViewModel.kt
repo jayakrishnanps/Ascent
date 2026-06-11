@@ -160,7 +160,7 @@ class AddEditTaskViewModel @Inject constructor(
             // Check if initialStartDate is on a selected day
             val cal = java.util.Calendar.getInstance()
             cal.timeInMillis = initialStartDate
-            val currentDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK) - 1 // 0-indexed (Sunday = 0)
+            val currentDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK) - 1
             
             if (!currentState.weeklyDays.contains(currentDayOfWeek)) {
                 // Find next valid day
@@ -179,7 +179,7 @@ class AddEditTaskViewModel @Inject constructor(
         if (currentState.recurrenceType == RecurrenceType.WEEKLY && currentState.weeklyDays.isNotEmpty() && finalEndDate != null) {
             val endCal = java.util.Calendar.getInstance()
             endCal.timeInMillis = finalEndDate
-            val endDayOfWeek = endCal.get(java.util.Calendar.DAY_OF_WEEK) - 1 // 0-indexed
+            val endDayOfWeek = endCal.get(java.util.Calendar.DAY_OF_WEEK) - 1
             
             if (!currentState.weeklyDays.contains(endDayOfWeek)) {
                 // Find previous valid day

@@ -41,7 +41,7 @@ class EvaluateMissedTasksUseCase @Inject constructor(
         var userProgress = userRepository.getUserProgress(userId).firstOrNull() ?: return
 
         for (task in missedRecurringTasks) {
-            // Apply Penalty
+
             val penalty = task.difficulty.xpAward
             val newTotalXp = maxOf(0, userProgress.totalXp - penalty)
             val newLevel = calculateLevel(newTotalXp)
@@ -49,10 +49,10 @@ class EvaluateMissedTasksUseCase @Inject constructor(
             userProgress = userProgress.copy(
                 totalXp = newTotalXp,
                 currentLevel = newLevel,
-                currentStreak = 0 // Reset streak
+                currentStreak = 0
             )
 
-            // Record Miss
+
             val history = CompletionHistory(
                 taskId = task.id,
                 completedAt = now,
@@ -61,7 +61,7 @@ class EvaluateMissedTasksUseCase @Inject constructor(
             )
             completionHistoryRepository.insert(history)
 
-            // Advance task date
+
             val nextValidDate = calculateNextValidDate(task, startOfToday)
             
             if (task.recurrenceEndDate != null && nextValidDate > task.recurrenceEndDate) {

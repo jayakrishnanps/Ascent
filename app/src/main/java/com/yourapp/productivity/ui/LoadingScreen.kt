@@ -77,7 +77,6 @@ fun LoadingScreen(onLoadingComplete: (isAuthenticated: Boolean) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Glass orb with bolt
             Box(
                 modifier = Modifier
                     .size(128.dp)
