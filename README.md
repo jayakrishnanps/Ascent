@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logoforreadme1.png" alt="Ascent Logo" width="200" />
+  <img src="assets/logoforreadmeI.png" alt="Ascent Logo" width="200" />
 
   <h1 style="font-family: 'Press Start 2P', 'Courier New', Courier, monospace; letter-spacing: 2px;">
     ASCENT
